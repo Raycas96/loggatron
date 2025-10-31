@@ -23,7 +23,12 @@
     "format": "prettier --write \"src/**/*.{ts,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,json,md}\"",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky",
+    "dev:link": "npm run build && npm link",
+    "dev:pack": "npm run build && npm pack"
   },
   "keywords": [
     "logger",
@@ -49,7 +54,9 @@
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
     "rollup": "^4.9.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0"
   },
   "sideEffects": false,
   "lint-staged": {

@@ -1,4 +1,4 @@
-import { LoggatronConfig, LogMethod, MergedMethodConfig, MethodOverrideConfig } from './types';
+import { LoggatronConfig, LogMethod, MergedMethodConfig } from './types';
 import { DEFAULT_CONFIG } from './constants';
 import { RESET_COLOR } from './constants';
 

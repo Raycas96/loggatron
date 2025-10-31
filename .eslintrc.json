@@ -45,6 +45,7 @@
     ".eslintrc.json",
     "*.config.json",
     "package.json",
-    "package-lock.json"
+    "package-lock.json",
+    "*.md"
   ]
 }

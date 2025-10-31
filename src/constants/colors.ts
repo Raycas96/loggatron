@@ -1,0 +1,17 @@
+export const COLORS = {
+  Cyan: '\x1b[36m',
+  Green: '\x1b[32m',
+  Yellow: '\x1b[33m',
+  Red: '\x1b[31m',
+  Magenta: '\x1b[35m',
+  White: '\x1b[37m',
+  Black: '\x1b[30m',
+  Reset: '\x1b[0m',
+  BrightCyan: '\x1b[96m',
+  BrightGreen: '\x1b[92m',
+  BrightYellow: '\x1b[93m',
+  BrightRed: '\x1b[91m',
+  BrightMagenta: '\x1b[95m',
+  BrightWhite: '\x1b[97m',
+  BrightBlack: '\x1b[90m',
+};

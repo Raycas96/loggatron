@@ -51,3 +51,6 @@ export { Loggatron };
 
 // Export types
 export type { LoggatronConfig, LogContext };
+
+// Export colors
+export { COLORS } from './constants';

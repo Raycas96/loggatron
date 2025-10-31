@@ -1,17 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 import { init, configure, destroy, getInstance, Loggatron } from './index';
 
 describe('Loggatron API', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleLogSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleInfoSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleErrorSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleWarnSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleDebugSpy: any;
+  let consoleLogSpy: MockInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
+  let consoleWarnSpy: MockInstance;
+  let consoleDebugSpy: MockInstance;
 
   beforeEach(() => {
     // Spy on console methods

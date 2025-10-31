@@ -1,19 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 import { Loggatron } from './logger';
 import { DEFAULT_CONFIG } from './constants';
 
 describe('Loggatron', () => {
   let logger: Loggatron;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleLogSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleInfoSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleWarnSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleErrorSpy: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let consoleDebugSpy: any;
+  let consoleLogSpy: MockInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleWarnSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
+  let consoleDebugSpy: MockInstance;
 
   beforeEach(() => {
     // Spy on console methods
@@ -113,8 +108,6 @@ describe('Loggatron', () => {
       logger = new Loggatron();
       logger.init();
 
-      const originalLog = console.log;
-
       logger.destroy();
 
       // After destroy, should restore original
@@ -192,7 +185,7 @@ describe('Loggatron', () => {
       console.log('test');
 
       const calls = consoleLogSpy.mock.calls;
-      const firstCall = calls[0]?.[0];
+      const firstCall = calls[0]?.[0] as string;
       expect(String(firstCall)).toContain('CUSTOM_PRE');
     });
 
@@ -285,7 +278,7 @@ describe('Loggatron', () => {
       console.info('test');
 
       const calls = consoleInfoSpy.mock.calls;
-      const firstCall = calls[0]?.[0];
+      const firstCall = calls[0]?.[0] as string;
       expect(String(firstCall)).toContain('GLOBAL_PRE');
     });
   });

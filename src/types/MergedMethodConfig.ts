@@ -5,6 +5,4 @@ export interface MergedMethodConfig {
   };
   showFileName: boolean;
   showComponentName: boolean;
-  color: string;
-  emoji: string;
 }

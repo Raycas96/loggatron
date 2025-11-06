@@ -227,40 +227,6 @@ describe('Loggatron', () => {
       expect(callStrings).not.toMatch(/\[.*\]/);
     });
 
-    it('should apply method-specific color override', () => {
-      logger = new Loggatron({
-        overrides: {
-          warn: {
-            color: '\x1b[31m', // Red instead of default yellow
-          },
-        },
-      });
-      logger.init();
-
-      console.warn('test');
-
-      const calls = consoleWarnSpy.mock.calls;
-      const callStrings = calls.map((call: unknown[]) => String(call[0])).join(' ');
-      expect(callStrings).toContain('\x1b[31m');
-    });
-
-    it('should apply method-specific emoji override', () => {
-      logger = new Loggatron({
-        overrides: {
-          error: {
-            emoji: '🔥',
-          },
-        },
-      });
-      logger.init();
-
-      console.error('test');
-
-      const calls = consoleErrorSpy.mock.calls;
-      const callStrings = calls.map((call: unknown[]) => String(call[0])).join(' ');
-      expect(callStrings).toContain('🔥');
-    });
-
     it('should fallback to global config when override is undefined', () => {
       logger = new Loggatron({
         separator: {
@@ -446,7 +412,6 @@ describe('Loggatron', () => {
               preLog: '',
               postLog: '',
             },
-            emoji: '',
           },
         },
       });

@@ -242,11 +242,6 @@ describe('Loggatron API', () => {
         separator: {
           preLog: 'test',
         },
-        overrides: {
-          log: {
-            emoji: '📝',
-          },
-        },
       };
 
       init(config);

@@ -111,7 +111,6 @@ init({
       },
       showFileName: false, // Don't show file name for info
       showComponentName: true, // But still show component name
-      emoji: '💡', // Custom emoji for info
     },
     error: {
       separator: {
@@ -120,7 +119,6 @@ init({
       },
       showFileName: true,
       showComponentName: true,
-      emoji: '🔥', // Custom emoji
     },
     debug: {
       separator: {
@@ -216,7 +214,7 @@ customLogger.init();
 
 ### Method-Specific Overrides (`overrides`)
 
-Each method can override any of these options:
+Each method can override these specific options:
 
 ```typescript
 overrides: {
@@ -224,14 +222,16 @@ overrides: {
     separator?: { preLog?: string; postLog?: string };
     showFileName?: boolean;
     showComponentName?: boolean;
-    color?: string;
-    emoji?: string;
   };
   // ... same for info, warn, error, debug
 }
 ```
 
-**Note**: Override values take precedence over global values. If an override option is `undefined`, it falls back to the global setting.
+**Note**:
+
+- Override values take precedence over global values. If an override option is `undefined`, it falls back to the global setting.
+- **Colors and emojis cannot be overridden per method** - they are set globally via `colors` and `emojis` configuration options.
+- Each method uses its own color and emoji from the global `colors` and `emojis` configuration (e.g., `colors.error` for `console.error`, `emojis.info` for `console.info`).
 
 ## Removing Console.log in Production Builds
 
@@ -477,9 +477,9 @@ init({
 });
 ```
 
-## Contributing
+## Changelog
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+All notable changes to this project are documented in [CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 

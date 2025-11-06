@@ -218,7 +218,6 @@ describe('Loggatron API', () => {
       configure({
         overrides: {
           error: {
-            emoji: '🔥',
             separator: {
               preLog: 'ERROR_START',
               postLog: 'ERROR_END',
@@ -231,7 +230,6 @@ describe('Loggatron API', () => {
 
       const calls = consoleErrorSpy.mock.calls;
       const callStrings = calls.map((call: unknown[]) => String(call[0])).join(' ');
-      expect(callStrings).toContain('🔥');
       expect(callStrings).toContain('ERROR_START');
     });
   });

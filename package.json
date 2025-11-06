@@ -1,6 +1,6 @@
 {
   "name": "loggatron",
-  "version": "1.1.0",
+  "version": "1.1.1-alpha.0",
   "description": "A tree-shakeable, configurable logger that intercepts console methods with separators, colors, and emojis",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -32,7 +32,15 @@
     "dev:pack": "npm run build && npm pack",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major"
+    "release:major": "standard-version --release-as major",
+    "release:beta": "standard-version --prerelease beta",
+    "release:beta:minor": "standard-version --prerelease beta --release-as minor",
+    "release:beta:major": "standard-version --prerelease beta --release-as major",
+    "release:alpha": "standard-version --prerelease alpha",
+    "release:rc": "standard-version --prerelease rc",
+    "publish:beta": "npm run release:beta && npm publish --tag beta",
+    "publish:alpha": "npm run release:alpha && npm publish --tag alpha",
+    "publish:rc": "npm run release:rc && npm publish --tag rc"
   },
   "keywords": [
     "logger",
@@ -75,4 +83,9 @@
   "dependencies": {
     "tslib": "^2.8.1"
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
 }

@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. See [standa
 - export colors const ([16896e4](https://github.com/Raycas96/loggatron/commit/16896e4c1f6c52c4876e7d942f98171777b5cf0e))
 - ignore md file in eslintrc ([27cb731](https://github.com/Raycas96/loggatron/commit/27cb73117322775c0bd7feed904a39ac24bed747))
 - implement tests ([a562b49](https://github.com/Raycas96/loggatron/commit/a562b493a1b01f8a1b471769d13305357f7387b6))
-- use initialize global var and remove usless override ([20775b0](https://github.com/Raycas96/loggatron/commit/20775b047e068f0524713aa85dcb238172857126))
+- use initialize global var and remove useless override ([20775b0](https://github.com/Raycas96/loggatron/commit/20775b047e068f0524713aa85dcb238172857126))
 
 ### Bug Fixes
 

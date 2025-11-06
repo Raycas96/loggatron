@@ -1,6 +1,8 @@
-import { LoggatronConfig, LogMethod, MergedMethodConfig } from './types';
+import { LogContext, LoggatronConfig, LogMethod, MergedMethodConfig } from './types';
 import { DEFAULT_CONFIG } from './constants';
 import { RESET_COLOR } from './constants';
+
+let isInitialized = false;
 
 export class Loggatron {
   private config: Required<Omit<LoggatronConfig, 'overrides'>> & {
@@ -14,8 +16,6 @@ export class Loggatron {
     error: typeof console.error;
     debug: typeof console.debug;
   };
-
-  private isInitialized: boolean = false;
 
   constructor(config: LoggatronConfig = {}) {
     this.config = {
@@ -55,7 +55,7 @@ export class Loggatron {
   }
 
   public init(): void {
-    if (this.isInitialized) {
+    if (isInitialized) {
       return;
     }
 
@@ -72,11 +72,11 @@ export class Loggatron {
       };
     });
 
-    this.isInitialized = true;
+    isInitialized = true;
   }
 
   public destroy(): void {
-    if (!this.isInitialized) {
+    if (!isInitialized) {
       return;
     }
 
@@ -86,7 +86,7 @@ export class Loggatron {
     console.error = this.originalConsole.error;
     console.debug = this.originalConsole.debug;
 
-    this.isInitialized = false;
+    isInitialized = false;
   }
 
   private getMethodConfig(method: LogMethod): MergedMethodConfig {
@@ -94,8 +94,6 @@ export class Loggatron {
       separator: this.config.separator,
       showFileName: this.config.showFileName,
       showComponentName: this.config.showComponentName,
-      color: this.config.colors[method]!,
-      emoji: this.config.emojis[method]!,
     };
 
     const override = this.config.overrides?.[method];
@@ -121,15 +119,15 @@ export class Loggatron {
         override.showComponentName !== undefined
           ? override.showComponentName
           : globalConfig.showComponentName,
-      color: override.color ?? globalConfig.color,
-      emoji: override.emoji ?? globalConfig.emoji,
     };
   }
 
   private log(method: LogMethod, args: unknown[], originalMethod: typeof console.log): void {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
-    const { color, emoji, separator, showFileName, showComponentName } = methodConfig;
+    const { separator, showFileName, showComponentName } = methodConfig;
+    const color = this.config.colors[method]!;
+    const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;
 
     // Pre-log separator
@@ -183,7 +181,7 @@ export class Loggatron {
     originalMethod('');
   }
 
-  private captureContext(): import('./types').LogContext {
+  private captureContext(): LogContext {
     if (!this.config.captureStack) {
       return {};
     }

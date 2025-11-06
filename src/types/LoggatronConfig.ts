@@ -7,8 +7,6 @@ export interface MethodOverrideConfig {
   };
   showFileName?: boolean;
   showComponentName?: boolean;
-  color?: string;
-  emoji?: string;
 }
 
 export interface LoggatronConfig {

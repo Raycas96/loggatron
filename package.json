@@ -29,7 +29,10 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "dev:link": "npm run build && npm link",
-    "dev:pack": "npm run build && npm pack"
+    "dev:pack": "npm run build && npm pack",
+    "release": "standard-version",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major"
   },
   "keywords": [
     "logger",
@@ -42,6 +45,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
@@ -56,6 +61,7 @@
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
     "rollup": "^4.9.6",
+    "standard-version": "^9.5.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
   },
@@ -68,5 +74,10 @@
   },
   "dependencies": {
     "tslib": "^2.8.1"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }

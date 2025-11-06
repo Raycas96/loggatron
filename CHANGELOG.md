@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1-alpha.0](https://github.com/Raycas96/loggatron/compare/v1.1.0...v1.1.1-alpha.0) (2025-11-06)
+
+### Bug Fixes
+
+- fix package.json and add new scripts ([a7c81f3](https://github.com/Raycas96/loggatron/commit/a7c81f3d22b91241f4ced209515644be756b9ca8))
+
 ## 1.1.0 (2025-11-06)
 
 ### Features

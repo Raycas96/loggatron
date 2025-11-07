@@ -229,8 +229,9 @@ describe('Loggatron API', () => {
 
       console.error('error message');
 
-      const calls = consoleErrorSpy.mock.calls;
-      const callStrings = calls.map((call: unknown[]) => String(call[0])).join(' ');
+      // Separators are logged via console.log, so check consoleLogSpy
+      const logCalls = consoleLogSpy.mock.calls;
+      const callStrings = logCalls.map((call: unknown[]) => String(call[0])).join(' ');
       expect(callStrings).toContain('ERROR_START');
     });
   });

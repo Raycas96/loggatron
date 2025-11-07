@@ -243,9 +243,10 @@ describe('Loggatron', () => {
 
       console.info('test');
 
-      const calls = consoleInfoSpy.mock.calls;
-      const firstCall = calls[0]?.[0] as string;
-      expect(String(firstCall)).toContain('GLOBAL_PRE');
+      // Separators are logged via console.log, so check consoleLogSpy
+      const logCalls = consoleLogSpy.mock.calls;
+      const allLogCalls = logCalls.map((call: unknown[]) => String(call[0])).join(' ');
+      expect(allLogCalls).toContain('GLOBAL_PRE');
     });
   });
 

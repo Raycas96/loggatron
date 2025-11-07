@@ -248,6 +248,34 @@ describe('Loggatron', () => {
       const allLogCalls = logCalls.map((call: unknown[]) => String(call[0])).join(' ');
       expect(allLogCalls).toContain('GLOBAL_PRE');
     });
+
+    it('should apply method-specific addNewLine override', () => {
+      logger = new Loggatron({
+        addNewLine: false, // Global: no newline
+        overrides: {
+          error: {
+            addNewLine: true, // Override: add newline for errors
+          },
+        },
+      });
+      logger.init();
+
+      // Clear any previous calls
+      consoleLogSpy.mockClear();
+      consoleErrorSpy.mockClear();
+
+      console.log('regular log');
+      const logCallCountAfterLog = consoleLogSpy.mock.calls.length;
+      const lastLogCall = consoleLogSpy.mock.calls[logCallCountAfterLog - 1];
+      // Regular log should not have extra newline (last call should not be empty string)
+      expect(lastLogCall?.[0]).not.toBe('');
+
+      console.error('error log');
+      const logCallCountAfterError = consoleLogSpy.mock.calls.length;
+      const lastErrorCall = consoleLogSpy.mock.calls[logCallCountAfterError - 1];
+      // Error log should have extra newline (last call should be empty string)
+      expect(lastErrorCall?.[0]).toBe('');
+    });
   });
 
   describe('separators', () => {

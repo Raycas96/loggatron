@@ -6,4 +6,5 @@ export interface MergedMethodConfig {
   };
   showFileName: boolean;
   showFunctionName: boolean;
+  addNewLine: boolean;
 }

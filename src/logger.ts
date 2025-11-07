@@ -100,6 +100,7 @@ export class Loggatron {
       separator: globalSeparator,
       showFileName: this.config.showFileName ?? DEFAULT_CONFIG.showFileName,
       showFunctionName: this.config.showFunctionName ?? DEFAULT_CONFIG.showFunctionName,
+      addNewLine: this.config.addNewLine ?? DEFAULT_CONFIG.addNewLine,
     };
 
     const override = this.config.overrides?.[method];
@@ -129,6 +130,7 @@ export class Loggatron {
         override.showFunctionName !== undefined
           ? override.showFunctionName
           : globalConfig.showFunctionName,
+      addNewLine: override.addNewLine !== undefined ? override.addNewLine : globalConfig.addNewLine,
     };
   }
 
@@ -189,7 +191,7 @@ export class Loggatron {
     }
 
     // Add spacing if enabled
-    if (this.config.addNewLine) {
+    if (methodConfig.addNewLine) {
       this.originalConsole.log('');
     }
   }

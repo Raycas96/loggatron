@@ -10,6 +10,7 @@ export const DEFAULT_CONFIG: Required<Omit<LoggatronConfig, 'overrides'>> & {
     postLog: '--------------------------------',
     color: COLORS.BrightWhite,
   },
+  addNewLine: false,
   showFileName: true,
   showFunctionName: true,
   colors: {

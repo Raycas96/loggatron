@@ -90,10 +90,16 @@ export class Loggatron {
   }
 
   private getMethodConfig(method: LogMethod): MergedMethodConfig {
+    // Ensure separator always has default values merged
+    const globalSeparator = {
+      ...DEFAULT_CONFIG.separator,
+      ...this.config.separator,
+    };
+
     const globalConfig: MergedMethodConfig = {
-      separator: this.config.separator,
-      showFileName: this.config.showFileName,
-      showFunctionName: this.config.showFunctionName,
+      separator: globalSeparator,
+      showFileName: this.config.showFileName ?? DEFAULT_CONFIG.showFileName,
+      showFunctionName: this.config.showFunctionName ?? DEFAULT_CONFIG.showFunctionName,
     };
 
     const override = this.config.overrides?.[method];
@@ -182,8 +188,10 @@ export class Loggatron {
       originalMethod(postLogParts.join(' '));
     }
 
-    // Add spacing
-    originalMethod('');
+    // Add spacing if enabled
+    if (this.config.addNewLine) {
+      this.originalConsole.log('');
+    }
   }
 
   private captureContext(): LogContext {

@@ -6,6 +6,7 @@ export interface MethodOverrideConfig {
     postLog?: string;
     color?: string;
   };
+  addNewLine?: boolean;
   showFileName?: boolean;
   showFunctionName?: boolean;
 }
@@ -18,6 +19,7 @@ export interface LoggatronConfig {
     postLog?: string;
     color?: string;
   };
+  addNewLine?: boolean;
   showFileName?: boolean;
   showFunctionName?: boolean;
   colors?: {

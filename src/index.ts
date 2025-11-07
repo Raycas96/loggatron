@@ -46,9 +46,6 @@ export function getInstance(): Loggatron | null {
   return instance;
 }
 
-// Export class for advanced usage
-export { Loggatron };
-
 // Export types
 export type { LoggatronConfig, LogContext };
 

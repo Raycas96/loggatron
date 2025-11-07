@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
-import { init, configure, destroy, getInstance, Loggatron } from './index';
+import { init, configure, destroy, getInstance } from './index';
+import { Loggatron } from './logger';
 
 describe('Loggatron API', () => {
   let consoleLogSpy: MockInstance;

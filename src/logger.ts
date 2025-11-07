@@ -93,7 +93,7 @@ export class Loggatron {
     const globalConfig: MergedMethodConfig = {
       separator: this.config.separator,
       showFileName: this.config.showFileName,
-      showComponentName: this.config.showComponentName,
+      showFunctionName: this.config.showFunctionName,
     };
 
     const override = this.config.overrides?.[method];
@@ -119,17 +119,17 @@ export class Loggatron {
       },
       showFileName:
         override.showFileName !== undefined ? override.showFileName : globalConfig.showFileName,
-      showComponentName:
-        override.showComponentName !== undefined
-          ? override.showComponentName
-          : globalConfig.showComponentName,
+      showFunctionName:
+        override.showFunctionName !== undefined
+          ? override.showFunctionName
+          : globalConfig.showFunctionName,
     };
   }
 
   private log(method: LogMethod, args: unknown[], originalMethod: typeof console.log): void {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
-    const { separator, showFileName, showComponentName } = methodConfig;
+    const { separator, showFileName, showFunctionName: showComponentName } = methodConfig;
     const separatorColor = separator.color || this.config.separator.color;
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;

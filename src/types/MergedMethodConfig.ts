@@ -5,5 +5,5 @@ export interface MergedMethodConfig {
     color?: string;
   };
   showFileName: boolean;
-  showComponentName: boolean;
+  showFunctionName: boolean;
 }

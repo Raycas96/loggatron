@@ -7,7 +7,7 @@ export interface MethodOverrideConfig {
     color?: string;
   };
   showFileName?: boolean;
-  showComponentName?: boolean;
+  showFunctionName?: boolean;
 }
 
 export interface LoggatronConfig {
@@ -19,7 +19,7 @@ export interface LoggatronConfig {
     color?: string;
   };
   showFileName?: boolean;
-  showComponentName?: boolean;
+  showFunctionName?: boolean;
   colors?: {
     log?: string;
     info?: string;

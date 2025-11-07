@@ -11,7 +11,7 @@ export const DEFAULT_CONFIG: Required<Omit<LoggatronConfig, 'overrides'>> & {
     color: COLORS.BrightWhite,
   },
   showFileName: true,
-  showComponentName: true,
+  showFunctionName: true,
   colors: {
     log: COLORS.Cyan, // Cyan
     info: COLORS.Green, // Green

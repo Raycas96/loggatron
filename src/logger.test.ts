@@ -210,10 +210,10 @@ describe('Loggatron', () => {
 
     it('should apply method-specific showComponentName override', () => {
       logger = new Loggatron({
-        showComponentName: true,
+        showFunctionName: true,
         overrides: {
           debug: {
-            showComponentName: false,
+            showFunctionName: false,
           },
         },
       });
@@ -330,7 +330,7 @@ describe('Loggatron', () => {
 
     it('should show component name when enabled', () => {
       logger = new Loggatron({
-        showComponentName: true,
+        showFunctionName: true,
       });
       logger.init();
 

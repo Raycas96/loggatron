@@ -90,10 +90,17 @@ export class Loggatron {
   }
 
   private getMethodConfig(method: LogMethod): MergedMethodConfig {
+    // Ensure separator always has default values merged
+    const globalSeparator = {
+      ...DEFAULT_CONFIG.separator,
+      ...this.config.separator,
+    };
+
     const globalConfig: MergedMethodConfig = {
-      separator: this.config.separator,
-      showFileName: this.config.showFileName,
-      showComponentName: this.config.showComponentName,
+      separator: globalSeparator,
+      showFileName: this.config.showFileName ?? DEFAULT_CONFIG.showFileName,
+      showFunctionName: this.config.showFunctionName ?? DEFAULT_CONFIG.showFunctionName,
+      addNewLine: this.config.addNewLine ?? DEFAULT_CONFIG.addNewLine,
     };
 
     const override = this.config.overrides?.[method];
@@ -112,20 +119,26 @@ export class Loggatron {
           override.separator?.postLog !== undefined
             ? override.separator.postLog
             : globalConfig.separator.postLog,
+        color:
+          override.separator?.color !== undefined
+            ? override.separator.color
+            : globalConfig.separator.color,
       },
       showFileName:
         override.showFileName !== undefined ? override.showFileName : globalConfig.showFileName,
-      showComponentName:
-        override.showComponentName !== undefined
-          ? override.showComponentName
-          : globalConfig.showComponentName,
+      showFunctionName:
+        override.showFunctionName !== undefined
+          ? override.showFunctionName
+          : globalConfig.showFunctionName,
+      addNewLine: override.addNewLine !== undefined ? override.addNewLine : globalConfig.addNewLine,
     };
   }
 
   private log(method: LogMethod, args: unknown[], originalMethod: typeof console.log): void {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
-    const { separator, showFileName, showComponentName } = methodConfig;
+    const { separator, showFileName, showFunctionName: showComponentName } = methodConfig;
+    const separatorColor = separator.color;
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;
@@ -133,7 +146,7 @@ export class Loggatron {
     // Pre-log separator
     const preLogParts: string[] = [];
     if (separator.preLog) {
-      preLogParts.push(`${color}${separator.preLog}${reset}`);
+      preLogParts.push(`${separatorColor}${separator.preLog}${reset}`);
     }
 
     // Context info
@@ -156,12 +169,12 @@ export class Loggatron {
     // Post-log separator
     const postLogParts: string[] = [];
     if (separator.postLog) {
-      postLogParts.push(`${color}${separator.postLog}${reset}`);
+      postLogParts.push(`${separatorColor}${separator.postLog}${reset}`);
     }
 
     // Print pre-log separator
     if (preLogParts.length > 0) {
-      originalMethod(preLogParts.join(' '));
+      this.originalConsole.log(preLogParts.join(' '));
     }
 
     // Print context info
@@ -174,11 +187,13 @@ export class Loggatron {
 
     // Print post-log separator
     if (postLogParts.length > 0) {
-      originalMethod(postLogParts.join(' '));
+      this.originalConsole.log(postLogParts.join(' '));
     }
 
-    // Add spacing
-    originalMethod('');
+    // Add spacing if enabled
+    if (methodConfig.addNewLine) {
+      this.originalConsole.log('');
+    }
   }
 
   private captureContext(): LogContext {

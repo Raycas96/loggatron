@@ -2,6 +2,8 @@
 
 A tree-shakeable, configurable logger that intercepts console methods with beautiful separators, colors, emojis, and context information. Configure once and enhance all your console logs with automatic file/component detection and method-specific customization.
 
+> **⚠️ Beta Status**: This package is currently in beta. It has been thoroughly tested with 95%+ test coverage, but may still contain bugs or require API adjustments based on real-world usage. Please report any issues you encounter!
+
 ## Why Loggatron?
 
 This package was created not because existing logging solutions are inadequate, but because none of them perfectly matched the specific requirements I was looking for. I needed a logger that:
@@ -42,9 +44,9 @@ init();
 // Now all console.log calls will be enhanced
 console.log('Hello World');
 // Output:
-// =========================== 📝 [MyComponent] (index.ts:42)
+// -------------------------------- 📝 [MyComponent] (index.ts:42)
 // Hello World
-// ===========================
+// --------------------------------
 ```
 
 ## Basic Usage
@@ -71,6 +73,7 @@ init({
   separator: {
     preLog: '━━━━━━━━━━━━━━━━━━━━━━━━',
     postLog: '━━━━━━━━━━━━━━━━━━━━━━━━',
+    color: '\x1b[97m', // Bright White for separators
   },
   colors: {
     log: '\x1b[36m', // Cyan
@@ -81,7 +84,8 @@ init({
     error: '🔥',
   },
   showFileName: true,
-  showComponentName: true,
+  showFunctionName: true,
+  addNewLine: false, // Don't add extra newline after logs
   methods: ['log', 'error', 'warn'], // Only intercept these methods
 });
 ```
@@ -96,11 +100,13 @@ import { init } from 'loggatron';
 init({
   // Global defaults
   separator: {
-    preLog: '===========================',
-    postLog: '===========================',
+    preLog: '--------------------------------',
+    postLog: '--------------------------------',
+    color: '\x1b[97m', // Bright White for separators
   },
   showFileName: true,
-  showComponentName: true,
+  showFunctionName: true,
+  addNewLine: false,
 
   // Method-specific overrides
   overrides: {
@@ -110,27 +116,29 @@ init({
         postLog: '', // Clean output
       },
       showFileName: false, // Don't show file name for info
-      showComponentName: true, // But still show component name
+      showFunctionName: true, // But still show function name
     },
     error: {
       separator: {
         preLog: '🚨🚨🚨 ERROR 🚨🚨🚨',
         postLog: '━━━━━━━━━━━━━━━━━━━━━━━━',
+        color: '\x1b[91m', // Bright Red for error separators
       },
       showFileName: true,
-      showComponentName: true,
+      showFunctionName: true,
     },
     debug: {
       separator: {
         preLog: '🐛 DEBUG START 🐛',
         postLog: '🐛 DEBUG END 🐛',
+        color: '\x1b[95m', // Bright Magenta for debug separators
       },
       showFileName: true,
-      showComponentName: false, // Hide component name for debug
+      showFunctionName: false, // Hide function name for debug
     },
     warn: {
       showFileName: false, // Simple warning format
-      showComponentName: true,
+      showFunctionName: true,
     },
   },
 });
@@ -172,45 +180,41 @@ destroy(); // Restores original console methods
 ### Access Instance (Advanced)
 
 ```typescript
-import { getInstance, Loggatron } from 'loggatron';
+import { getInstance } from 'loggatron';
 
 const instance = getInstance();
 if (instance) {
   // Access the Loggatron instance directly
+  // Note: The instance type is not exported, but you can use it via getInstance()
 }
-
-// Or create your own instance
-import { Loggatron } from 'loggatron';
-const customLogger = new Loggatron({
-  // custom config
-});
-customLogger.init();
 ```
 
 ## Configuration Options
 
 ### Global Configuration
 
-| Option              | Type          | Default                                 | Description                         |
-| ------------------- | ------------- | --------------------------------------- | ----------------------------------- |
-| `enabled`           | `boolean`     | `true`                                  | Enable/disable the logger           |
-| `separator.preLog`  | `string`      | `"==========================="`         | Text before each log                |
-| `separator.postLog` | `string`      | `"==========================="`         | Text after each log                 |
-| `showFileName`      | `boolean`     | `true`                                  | Show file name and line number      |
-| `showComponentName` | `boolean`     | `true`                                  | Show component/function name        |
-| `colors.log`        | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)      |
-| `colors.info`       | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)    |
-| `colors.warn`       | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)   |
-| `colors.error`      | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)     |
-| `colors.debug`      | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta) |
-| `emojis.log`        | `string`      | `'📝'`                                  | Emoji for log                       |
-| `emojis.info`       | `string`      | `'ℹ️'`                                  | Emoji for info                      |
-| `emojis.warn`       | `string`      | `'⚠️'`                                  | Emoji for warn                      |
-| `emojis.error`      | `string`      | `'❌'`                                  | Emoji for error                     |
-| `emojis.debug`      | `string`      | `'🐛'`                                  | Emoji for debug                     |
-| `methods`           | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept        |
-| `captureStack`      | `boolean`     | `true`                                  | Capture stack trace for context     |
-| `maxStackDepth`     | `number`      | `3`                                     | Maximum stack frames to check       |
+| Option              | Type          | Default                                 | Description                                   |
+| ------------------- | ------------- | --------------------------------------- | --------------------------------------------- |
+| `enabled`           | `boolean`     | `true`                                  | Enable/disable the logger                     |
+| `separator.preLog`  | `string`      | `"--------------------------------"`    | Text before each log                          |
+| `separator.postLog` | `string`      | `"--------------------------------"`    | Text after each log                           |
+| `separator.color`   | `string`      | `'\x1b[97m'`                            | ANSI color code for separators (Bright White) |
+| `showFileName`      | `boolean`     | `true`                                  | Show file name and line number                |
+| `showFunctionName`  | `boolean`     | `true`                                  | Show function/component name                  |
+| `addNewLine`        | `boolean`     | `false`                                 | Add extra newline after each log              |
+| `colors.log`        | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)                |
+| `colors.info`       | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)              |
+| `colors.warn`       | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)             |
+| `colors.error`      | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)               |
+| `colors.debug`      | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta)           |
+| `emojis.log`        | `string`      | `'📝'`                                  | Emoji for log                                 |
+| `emojis.info`       | `string`      | `'ℹ️'`                                  | Emoji for info                                |
+| `emojis.warn`       | `string`      | `'⚠️'`                                  | Emoji for warn                                |
+| `emojis.error`      | `string`      | `'❌'`                                  | Emoji for error                               |
+| `emojis.debug`      | `string`      | `'🐛'`                                  | Emoji for debug                               |
+| `methods`           | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept                  |
+| `captureStack`      | `boolean`     | `true`                                  | Capture stack trace for context               |
+| `maxStackDepth`     | `number`      | `3`                                     | Maximum stack frames to check                 |
 
 ### Method-Specific Overrides (`overrides`)
 
@@ -219,9 +223,14 @@ Each method can override these specific options:
 ```typescript
 overrides: {
   log?: {
-    separator?: { preLog?: string; postLog?: string };
+    separator?: {
+      preLog?: string;
+      postLog?: string;
+      color?: string; // Custom color for this method's separators
+    };
     showFileName?: boolean;
-    showComponentName?: boolean;
+    showFunctionName?: boolean;
+    addNewLine?: boolean; // Override global addNewLine for this method
   };
   // ... same for info, warn, error, debug
 }
@@ -359,6 +368,14 @@ You can customize colors using ANSI escape codes:
 - `'\x1b[35m'` - Magenta
 - `'\x1b[36m'` - Cyan
 - `'\x1b[37m'` - White
+- `'\x1b[90m'` - Bright Black (Gray)
+- `'\x1b[91m'` - Bright Red
+- `'\x1b[92m'` - Bright Green
+- `'\x1b[93m'` - Bright Yellow
+- `'\x1b[94m'` - Bright Blue
+- `'\x1b[95m'` - Bright Magenta
+- `'\x1b[96m'` - Bright Cyan
+- `'\x1b[97m'` - Bright White
 - `'\x1b[0m'` - Reset (automatically added)
 
 ## Browser Support
@@ -404,17 +421,7 @@ const instance = getInstance();
 
 ### `Loggatron` (Class)
 
-For advanced usage, you can create your own Loggatron instance:
-
-```typescript
-import { Loggatron } from 'loggatron';
-
-const logger = new Loggatron({
-  // config
-});
-logger.init();
-logger.destroy();
-```
+The `Loggatron` class is not exported from the main entry point to keep the API surface minimal. Use the `init()`, `configure()`, `destroy()`, and `getInstance()` functions instead for all use cases.
 
 ## Examples
 
@@ -425,10 +432,12 @@ logger.destroy();
 import { init } from 'loggatron';
 
 init({
+  addNewLine: true, // Add spacing between logs
   overrides: {
     info: {
       separator: { preLog: '', postLog: '' },
       showFileName: false,
+      showFunctionName: true,
     },
   },
 });
@@ -451,12 +460,15 @@ init({
   separator: {
     preLog: '┌─────────────────────────────',
     postLog: '└─────────────────────────────',
+    color: '\x1b[90m', // Gray for separators
   },
+  addNewLine: true, // Add spacing for better readability
   overrides: {
     error: {
       separator: {
         preLog: '❌ ERROR ───────────────────',
         postLog: '─────────────────────────────',
+        color: '\x1b[91m', // Bright Red for error separators
       },
     },
   },

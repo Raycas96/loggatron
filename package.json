@@ -1,10 +1,9 @@
 {
   "name": "loggatron",
-  "version": "1.1.1-alpha.1",
+  "version": "1.2.0-beta.0",
   "description": "A tree-shakeable, configurable logger that intercepts console methods with separators, colors, and emojis",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "type": "module",
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
@@ -52,6 +51,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raycas96/loggatron.git"
+  },
+  "homepage": "https://github.com/Raycas96/loggatron#readme",
+  "bugs": {
+    "url": "https://github.com/Raycas96/loggatron/issues"
+  },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
@@ -65,7 +72,7 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
     "rollup": "^4.9.6",

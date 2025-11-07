@@ -210,10 +210,10 @@ describe('Loggatron', () => {
 
     it('should apply method-specific showComponentName override', () => {
       logger = new Loggatron({
-        showComponentName: true,
+        showFunctionName: true,
         overrides: {
           debug: {
-            showComponentName: false,
+            showFunctionName: false,
           },
         },
       });
@@ -243,9 +243,38 @@ describe('Loggatron', () => {
 
       console.info('test');
 
-      const calls = consoleInfoSpy.mock.calls;
-      const firstCall = calls[0]?.[0] as string;
-      expect(String(firstCall)).toContain('GLOBAL_PRE');
+      // Separators are logged via console.log, so check consoleLogSpy
+      const logCalls = consoleLogSpy.mock.calls;
+      const allLogCalls = logCalls.map((call: unknown[]) => String(call[0])).join(' ');
+      expect(allLogCalls).toContain('GLOBAL_PRE');
+    });
+
+    it('should apply method-specific addNewLine override', () => {
+      logger = new Loggatron({
+        addNewLine: false, // Global: no newline
+        overrides: {
+          error: {
+            addNewLine: true, // Override: add newline for errors
+          },
+        },
+      });
+      logger.init();
+
+      // Clear any previous calls
+      consoleLogSpy.mockClear();
+      consoleErrorSpy.mockClear();
+
+      console.log('regular log');
+      const logCallCountAfterLog = consoleLogSpy.mock.calls.length;
+      const lastLogCall = consoleLogSpy.mock.calls[logCallCountAfterLog - 1];
+      // Regular log should not have extra newline (last call should not be empty string)
+      expect(lastLogCall?.[0]).not.toBe('');
+
+      console.error('error log');
+      const logCallCountAfterError = consoleLogSpy.mock.calls.length;
+      const lastErrorCall = consoleLogSpy.mock.calls[logCallCountAfterError - 1];
+      // Error log should have extra newline (last call should be empty string)
+      expect(lastErrorCall?.[0]).toBe('');
     });
   });
 
@@ -330,7 +359,7 @@ describe('Loggatron', () => {
 
     it('should show component name when enabled', () => {
       logger = new Loggatron({
-        showComponentName: true,
+        showFunctionName: true,
       });
       logger.init();
 

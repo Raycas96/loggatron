@@ -138,7 +138,7 @@ export class Loggatron {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
     const { separator, showFileName, showFunctionName: showComponentName } = methodConfig;
-    const separatorColor = separator.color || this.config.separator.color;
+    const separatorColor = separator.color;
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;

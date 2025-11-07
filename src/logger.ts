@@ -172,7 +172,7 @@ export class Loggatron {
 
     // Print pre-log separator
     if (preLogParts.length > 0) {
-      originalMethod(preLogParts.join(' '));
+      this.originalConsole.log(preLogParts.join(' '));
     }
 
     // Print context info
@@ -185,7 +185,7 @@ export class Loggatron {
 
     // Print post-log separator
     if (postLogParts.length > 0) {
-      originalMethod(postLogParts.join(' '));
+      this.originalConsole.log(postLogParts.join(' '));
     }
 
     // Add spacing if enabled

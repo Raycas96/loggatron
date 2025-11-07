@@ -112,6 +112,10 @@ export class Loggatron {
           override.separator?.postLog !== undefined
             ? override.separator.postLog
             : globalConfig.separator.postLog,
+        color:
+          override.separator?.color !== undefined
+            ? override.separator.color
+            : globalConfig.separator.color,
       },
       showFileName:
         override.showFileName !== undefined ? override.showFileName : globalConfig.showFileName,
@@ -126,6 +130,7 @@ export class Loggatron {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
     const { separator, showFileName, showComponentName } = methodConfig;
+    const separatorColor = separator.color || this.config.separator.color;
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;
@@ -133,7 +138,7 @@ export class Loggatron {
     // Pre-log separator
     const preLogParts: string[] = [];
     if (separator.preLog) {
-      preLogParts.push(`${color}${separator.preLog}${reset}`);
+      preLogParts.push(`${separatorColor}${separator.preLog}${reset}`);
     }
 
     // Context info
@@ -156,7 +161,7 @@ export class Loggatron {
     // Post-log separator
     const postLogParts: string[] = [];
     if (separator.postLog) {
-      postLogParts.push(`${color}${separator.postLog}${reset}`);
+      postLogParts.push(`${separatorColor}${separator.postLog}${reset}`);
     }
 
     // Print pre-log separator

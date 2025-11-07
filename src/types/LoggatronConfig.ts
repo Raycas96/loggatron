@@ -4,6 +4,7 @@ export interface MethodOverrideConfig {
   separator?: {
     preLog?: string;
     postLog?: string;
+    color?: string;
   };
   showFileName?: boolean;
   showComponentName?: boolean;
@@ -15,6 +16,7 @@ export interface LoggatronConfig {
   separator?: {
     preLog?: string;
     postLog?: string;
+    color?: string;
   };
   showFileName?: boolean;
   showComponentName?: boolean;

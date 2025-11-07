@@ -6,8 +6,9 @@ export const DEFAULT_CONFIG: Required<Omit<LoggatronConfig, 'overrides'>> & {
 } = {
   enabled: true,
   separator: {
-    preLog: '===========================',
-    postLog: '===========================',
+    preLog: '--------------------------------',
+    postLog: '--------------------------------',
+    color: COLORS.BrightWhite,
   },
   showFileName: true,
   showComponentName: true,

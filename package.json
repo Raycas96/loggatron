@@ -4,7 +4,6 @@
   "description": "A tree-shakeable, configurable logger that intercepts console methods with separators, colors, and emojis",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "type": "module",
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {

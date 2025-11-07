@@ -180,19 +180,13 @@ destroy(); // Restores original console methods
 ### Access Instance (Advanced)
 
 ```typescript
-import { getInstance, Loggatron } from 'loggatron';
+import { getInstance } from 'loggatron';
 
 const instance = getInstance();
 if (instance) {
   // Access the Loggatron instance directly
+  // Note: The instance type is not exported, but you can use it via getInstance()
 }
-
-// Or create your own instance
-import { Loggatron } from 'loggatron';
-const customLogger = new Loggatron({
-  // custom config
-});
-customLogger.init();
 ```
 
 ## Configuration Options
@@ -427,19 +421,7 @@ const instance = getInstance();
 
 ### `Loggatron` (Class)
 
-For advanced usage, you can import the Loggatron class directly:
-
-```typescript
-import { Loggatron } from 'loggatron/logger';
-
-const logger = new Loggatron({
-  // config
-});
-logger.init();
-logger.destroy();
-```
-
-**Note**: The `Loggatron` class is not exported from the main entry point to keep the API surface minimal. Import it from `'loggatron/logger'` if you need direct access to the class.
+The `Loggatron` class is not exported from the main entry point to keep the API surface minimal. Use the `init()`, `configure()`, `destroy()`, and `getInstance()` functions instead for all use cases.
 
 ## Examples
 

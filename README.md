@@ -2,6 +2,8 @@
 
 A tree-shakeable, configurable logger that intercepts console methods with beautiful separators, colors, emojis, and context information. Configure once and enhance all your console logs with automatic file/component detection and method-specific customization.
 
+> **⚠️ Beta Status**: This package is currently in beta. It has been thoroughly tested with 95%+ test coverage, but may still contain bugs or require API adjustments based on real-world usage. Please report any issues you encounter!
+
 ## Why Loggatron?
 
 This package was created not because existing logging solutions are inadequate, but because none of them perfectly matched the specific requirements I was looking for. I needed a logger that:

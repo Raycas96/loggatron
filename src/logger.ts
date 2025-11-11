@@ -123,6 +123,10 @@ export class Loggatron {
           override.separator?.color !== undefined
             ? override.separator.color
             : globalConfig.separator.color,
+        skipOnEmptyLog:
+          override.separator?.skipOnEmptyLog !== undefined
+            ? override.separator.skipOnEmptyLog
+            : globalConfig.separator.skipOnEmptyLog,
       },
       showFileName:
         override.showFileName !== undefined ? override.showFileName : globalConfig.showFileName,
@@ -142,10 +146,15 @@ export class Loggatron {
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;
+    const isEmptyLog =
+      args.length === 0 ||
+      (args.length === 1 && typeof args[0] === 'string' && args[0].trim() === '');
+
+    const shouldSkipSeparator = separator.skipOnEmptyLog && isEmptyLog;
 
     // Pre-log separator
     const preLogParts: string[] = [];
-    if (separator.preLog) {
+    if (separator.preLog && !shouldSkipSeparator) {
       preLogParts.push(`${separatorColor}${separator.preLog}${reset}`);
     }
 
@@ -168,7 +177,7 @@ export class Loggatron {
 
     // Post-log separator
     const postLogParts: string[] = [];
-    if (separator.postLog) {
+    if (separator.postLog && !shouldSkipSeparator) {
       postLogParts.push(`${separatorColor}${separator.postLog}${reset}`);
     }
 

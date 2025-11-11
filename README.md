@@ -2,8 +2,6 @@
 
 A tree-shakeable, configurable logger that intercepts console methods with beautiful separators, colors, emojis, and context information. Configure once and enhance all your console logs with automatic file/component detection and method-specific customization.
 
-> **⚠️ Beta Status**: This package is currently in beta. It has been thoroughly tested with 95%+ test coverage, but may still contain bugs or require API adjustments based on real-world usage. Please report any issues you encounter!
-
 ## Why Loggatron?
 
 This package was created not because existing logging solutions are inadequate, but because none of them perfectly matched the specific requirements I was looking for. I needed a logger that:
@@ -103,10 +101,11 @@ init({
     preLog: '--------------------------------',
     postLog: '--------------------------------',
     color: '\x1b[97m', // Bright White for separators
+    skipOnEmptyLog: true, // Skip separators on empty logs
   },
   showFileName: true,
   showFunctionName: true,
-  addNewLine: false,
+  addNewLine: false, // Don't add extra newline
 
   // Method-specific overrides
   overrides: {
@@ -114,15 +113,18 @@ init({
       separator: {
         preLog: '', // No separator for info
         postLog: '', // Clean output
+        skipOnEmptyLog: false, // Always show separators for info (if set)
       },
       showFileName: false, // Don't show file name for info
       showFunctionName: true, // But still show function name
+      addNewLine: true, // Add newline after info logs
     },
     error: {
       separator: {
         preLog: '🚨🚨🚨 ERROR 🚨🚨🚨',
         postLog: '━━━━━━━━━━━━━━━━━━━━━━━━',
         color: '\x1b[91m', // Bright Red for error separators
+        skipOnEmptyLog: false, // Always show error separators
       },
       showFileName: true,
       showFunctionName: true,
@@ -152,6 +154,100 @@ console.warn('Simple warning'); // Simplified format
 ```
 
 ## Advanced Usage
+
+### Skip Separators on Empty Logs
+
+By default, separators are skipped when a log is empty (no arguments or only whitespace). You can control this behavior:
+
+```typescript
+import { init } from 'loggatron';
+
+init({
+  separator: {
+    preLog: '--------------------------------',
+    postLog: '--------------------------------',
+    skipOnEmptyLog: true, // Default: skip separators on empty logs
+  },
+});
+
+console.log(''); // No separators shown (empty log)
+console.log('   '); // No separators shown (only whitespace)
+console.log('Actual message'); // Separators shown
+
+// Override per method
+init({
+  separator: {
+    skipOnEmptyLog: true, // Global default
+  },
+  overrides: {
+    error: {
+      separator: {
+        skipOnEmptyLog: false, // Always show separators for errors, even if empty
+      },
+    },
+  },
+});
+```
+
+### Add Newline After Logs
+
+Control whether to add an extra newline after each log:
+
+```typescript
+import { init } from 'loggatron';
+
+init({
+  addNewLine: true, // Add extra newline after each log
+});
+
+console.log('Message 1');
+console.log('Message 2');
+// Output will have extra spacing between logs
+
+// Override per method
+init({
+  addNewLine: false, // Global default: no extra newline
+  overrides: {
+    info: {
+      addNewLine: true, // Add newline only for info logs
+    },
+  },
+});
+```
+
+### Custom Separator Colors
+
+You can set different colors for separators (separate from log content colors):
+
+```typescript
+import { init } from 'loggatron';
+
+init({
+  separator: {
+    preLog: '--------------------------------',
+    postLog: '--------------------------------',
+    color: '\x1b[90m', // Gray separators
+  },
+  colors: {
+    log: '\x1b[36m', // Cyan for log content
+  },
+  // Separators will be gray, log content will be cyan
+});
+
+// Override separator color per method
+init({
+  separator: {
+    color: '\x1b[97m', // White separators by default
+  },
+  overrides: {
+    error: {
+      separator: {
+        color: '\x1b[91m', // Bright red separators for errors
+      },
+    },
+  },
+});
+```
 
 ### Update Configuration Dynamically
 
@@ -193,28 +289,29 @@ if (instance) {
 
 ### Global Configuration
 
-| Option              | Type          | Default                                 | Description                                   |
-| ------------------- | ------------- | --------------------------------------- | --------------------------------------------- |
-| `enabled`           | `boolean`     | `true`                                  | Enable/disable the logger                     |
-| `separator.preLog`  | `string`      | `"--------------------------------"`    | Text before each log                          |
-| `separator.postLog` | `string`      | `"--------------------------------"`    | Text after each log                           |
-| `separator.color`   | `string`      | `'\x1b[97m'`                            | ANSI color code for separators (Bright White) |
-| `showFileName`      | `boolean`     | `true`                                  | Show file name and line number                |
-| `showFunctionName`  | `boolean`     | `true`                                  | Show function/component name                  |
-| `addNewLine`        | `boolean`     | `false`                                 | Add extra newline after each log              |
-| `colors.log`        | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)                |
-| `colors.info`       | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)              |
-| `colors.warn`       | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)             |
-| `colors.error`      | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)               |
-| `colors.debug`      | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta)           |
-| `emojis.log`        | `string`      | `'📝'`                                  | Emoji for log                                 |
-| `emojis.info`       | `string`      | `'ℹ️'`                                  | Emoji for info                                |
-| `emojis.warn`       | `string`      | `'⚠️'`                                  | Emoji for warn                                |
-| `emojis.error`      | `string`      | `'❌'`                                  | Emoji for error                               |
-| `emojis.debug`      | `string`      | `'🐛'`                                  | Emoji for debug                               |
-| `methods`           | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept                  |
-| `captureStack`      | `boolean`     | `true`                                  | Capture stack trace for context               |
-| `maxStackDepth`     | `number`      | `3`                                     | Maximum stack frames to check                 |
+| Option                     | Type          | Default                                 | Description                                   |
+| -------------------------- | ------------- | --------------------------------------- | --------------------------------------------- |
+| `enabled`                  | `boolean`     | `true`                                  | Enable/disable the logger                     |
+| `separator.preLog`         | `string`      | `"--------------------------------"`    | Text before each log                          |
+| `separator.postLog`        | `string`      | `"--------------------------------"`    | Text after each log                           |
+| `separator.color`          | `string`      | `'\x1b[97m'`                            | ANSI color code for separators (Bright White) |
+| `separator.skipOnEmptyLog` | `boolean`     | `true`                                  | Skip separators when log is empty             |
+| `showFileName`             | `boolean`     | `true`                                  | Show file name and line number                |
+| `showFunctionName`         | `boolean`     | `true`                                  | Show function/component name                  |
+| `addNewLine`               | `boolean`     | `false`                                 | Add extra newline after each log              |
+| `colors.log`               | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)                |
+| `colors.info`              | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)              |
+| `colors.warn`              | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)             |
+| `colors.error`             | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)               |
+| `colors.debug`             | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta)           |
+| `emojis.log`               | `string`      | `'📝'`                                  | Emoji for log                                 |
+| `emojis.info`              | `string`      | `'ℹ️'`                                  | Emoji for info                                |
+| `emojis.warn`              | `string`      | `'⚠️'`                                  | Emoji for warn                                |
+| `emojis.error`             | `string`      | `'❌'`                                  | Emoji for error                               |
+| `emojis.debug`             | `string`      | `'🐛'`                                  | Emoji for debug                               |
+| `methods`                  | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept                  |
+| `captureStack`             | `boolean`     | `true`                                  | Capture stack trace for context               |
+| `maxStackDepth`            | `number`      | `3`                                     | Maximum stack frames to check                 |
 
 ### Method-Specific Overrides (`overrides`)
 
@@ -227,6 +324,7 @@ overrides: {
       preLog?: string;
       postLog?: string;
       color?: string; // Custom color for this method's separators
+      skipOnEmptyLog?: boolean; // Skip separators on empty logs for this method
     };
     showFileName?: boolean;
     showFunctionName?: boolean;

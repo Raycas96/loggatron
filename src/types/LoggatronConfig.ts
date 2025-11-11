@@ -5,6 +5,7 @@ export interface MethodOverrideConfig {
     preLog?: string;
     postLog?: string;
     color?: string;
+    skipOnEmptyLog?: boolean;
   };
   addNewLine?: boolean;
   showFileName?: boolean;
@@ -18,6 +19,7 @@ export interface LoggatronConfig {
     preLog?: string;
     postLog?: string;
     color?: string;
+    skipOnEmptyLog?: boolean;
   };
   addNewLine?: boolean;
   showFileName?: boolean;

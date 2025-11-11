@@ -278,7 +278,7 @@ export class Loggatron {
       functionName !== 'anonymous' &&
       !functionName.startsWith('Object.') &&
       !functionName.includes('.') &&
-      //should contain at least one letter
+      // Should contain at least one letter.
       functionName.match(/[a-zA-Z]/)
     ) {
       return functionName;

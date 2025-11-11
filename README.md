@@ -170,6 +170,7 @@ init({
   },
 });
 
+console.log(); // No separators shown (no arguments)
 console.log(''); // No separators shown (empty log)
 console.log('   '); // No separators shown (only whitespace)
 console.log('Actual message'); // Separators shown

@@ -1,6 +1,6 @@
 {
   "name": "loggatron",
-  "version": "1.2.0-beta.2",
+  "version": "1.2.0",
   "description": "A tree-shakeable, configurable logger that intercepts console methods with separators, colors, and emojis",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -29,7 +29,7 @@
     "prepare": "husky",
     "dev:link": "npm run build && npm link",
     "dev:pack": "npm run build && npm pack",
-    "release": "standard-version",
+    "release:latest": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:beta": "standard-version --prerelease beta",
@@ -39,7 +39,8 @@
     "release:rc": "standard-version --prerelease rc",
     "publish:beta": "npm run release:beta && npm publish --tag beta",
     "publish:alpha": "npm run release:alpha && npm publish --tag alpha",
-    "publish:rc": "npm run release:rc && npm publish --tag rc"
+    "publish:rc": "npm run release:rc && npm publish --tag rc",
+    "publish:latest": "npm run release:latest && npm publish --tag latest"
   },
   "keywords": [
     "logger",

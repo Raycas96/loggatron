@@ -208,7 +208,7 @@ describe('Loggatron', () => {
       expect(callStrings).not.toMatch(/\(.*:\d+\)/);
     });
 
-    it('should apply method-specific showComponentName override', () => {
+    it('should apply method-specific showFunctionName override', () => {
       logger = new Loggatron({
         showFunctionName: true,
         overrides: {
@@ -324,6 +324,51 @@ describe('Loggatron', () => {
       const calls = consoleLogSpy.mock.calls;
       const allCalls = calls.map((call: unknown[]) => String(call[0])).join(' ');
       expect(allCalls).not.toContain(DEFAULT_CONFIG.separator.preLog);
+    });
+
+    it('should not show separator if skipOnEmptyLog is true and log is empty', () => {
+      logger = new Loggatron({
+        separator: {
+          skipOnEmptyLog: true,
+        },
+      });
+      logger.init();
+      console.log('');
+
+      const calls = consoleLogSpy.mock.calls;
+      const allCalls = calls.map((call: unknown[]) => String(call[0])).join(' ');
+      expect(allCalls).not.toContain(DEFAULT_CONFIG.separator.preLog);
+      expect(allCalls).not.toContain(DEFAULT_CONFIG.separator.postLog);
+    });
+
+    it('should show separator if skipOnEmptyLog is true and log is not empty', () => {
+      logger = new Loggatron({
+        separator: {
+          skipOnEmptyLog: true,
+        },
+      });
+      logger.init();
+      console.log('test');
+
+      const calls = consoleLogSpy.mock.calls;
+      const allCalls = calls.map((call: unknown[]) => String(call[0])).join(' ');
+      expect(allCalls).toContain(DEFAULT_CONFIG.separator.preLog);
+      expect(allCalls).toContain(DEFAULT_CONFIG.separator.postLog);
+    });
+
+    it('should show separator if skipOnEmptyLog is false and log is null', () => {
+      logger = new Loggatron({
+        separator: {
+          skipOnEmptyLog: false,
+        },
+      });
+      logger.init();
+      console.log(null);
+
+      const calls = consoleLogSpy.mock.calls;
+      const allCalls = calls.map((call: unknown[]) => String(call[0])).join(' ');
+      expect(allCalls).toContain(DEFAULT_CONFIG.separator.preLog);
+      expect(allCalls).toContain(DEFAULT_CONFIG.separator.postLog);
     });
   });
 

@@ -9,6 +9,7 @@ export const DEFAULT_CONFIG: Required<Omit<LoggatronConfig, 'overrides'>> & {
     preLog: '--------------------------------',
     postLog: '--------------------------------',
     color: COLORS.BrightWhite,
+    skipOnEmptyLog: true,
   },
   addNewLine: false,
   showFileName: true,

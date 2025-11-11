@@ -123,6 +123,10 @@ export class Loggatron {
           override.separator?.color !== undefined
             ? override.separator.color
             : globalConfig.separator.color,
+        skipOnEmptyLog:
+          override.separator?.skipOnEmptyLog !== undefined
+            ? override.separator.skipOnEmptyLog
+            : globalConfig.separator.skipOnEmptyLog,
       },
       showFileName:
         override.showFileName !== undefined ? override.showFileName : globalConfig.showFileName,
@@ -137,15 +141,20 @@ export class Loggatron {
   private log(method: LogMethod, args: unknown[], originalMethod: typeof console.log): void {
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
-    const { separator, showFileName, showFunctionName: showComponentName } = methodConfig;
+    const { separator, showFileName, showFunctionName } = methodConfig;
     const separatorColor = separator.color;
     const color = this.config.colors[method]!;
     const emoji = this.config.emojis[method]!;
     const reset = RESET_COLOR;
+    const isEmptyLog =
+      args.length === 0 ||
+      (args.length === 1 && typeof args[0] === 'string' && args[0].trim() === '');
+
+    const shouldSkipSeparator = separator.skipOnEmptyLog && isEmptyLog;
 
     // Pre-log separator
     const preLogParts: string[] = [];
-    if (separator.preLog) {
+    if (separator.preLog && !shouldSkipSeparator) {
       preLogParts.push(`${separatorColor}${separator.preLog}${reset}`);
     }
 
@@ -155,8 +164,8 @@ export class Loggatron {
       contextParts.push(`${color}${emoji}${reset}`);
     }
 
-    if (showComponentName && context.componentName) {
-      contextParts.push(`${color}[${context.componentName}]${reset}`);
+    if (showFunctionName && context.functionName) {
+      contextParts.push(`${color}[${context.functionName}]${reset}`);
     }
 
     if (showFileName && context.fileName) {
@@ -168,7 +177,7 @@ export class Loggatron {
 
     // Post-log separator
     const postLogParts: string[] = [];
-    if (separator.postLog) {
+    if (separator.postLog && !shouldSkipSeparator) {
       postLogParts.push(`${separatorColor}${separator.postLog}${reset}`);
     }
 
@@ -220,7 +229,7 @@ export class Loggatron {
 
         const match = browserMatch || nodeMatch || simpleMatch;
         if (match) {
-          const functionName = match[1] || 'anonymous';
+          const name = match[1] || 'anonymous';
           const filePath = match[2] || match[1];
           const lineNumber = parseInt(match[3] || match[2], 10);
           const columnNumber = parseInt(match[4] || match[3], 10);
@@ -236,11 +245,11 @@ export class Loggatron {
           }
 
           const fileName = this.extractFileName(filePath);
-          const componentName = this.extractComponentName(functionName, filePath);
+          const functionName = this.extractFunctionName(name, filePath);
 
           return {
             fileName,
-            componentName,
+            functionName: functionName,
             lineNumber,
             columnNumber,
           };
@@ -262,13 +271,15 @@ export class Loggatron {
     return parts[parts.length - 1] || cleanPath;
   }
 
-  private extractComponentName(functionName: string, filePath: string): string {
+  private extractFunctionName(functionName: string, filePath: string): string {
     // If function name is meaningful, use it
     if (
       functionName &&
       functionName !== 'anonymous' &&
       !functionName.startsWith('Object.') &&
-      !functionName.includes('.')
+      !functionName.includes('.') &&
+      // Should contain at least one letter.
+      functionName.match(/[a-zA-Z]/)
     ) {
       return functionName;
     }

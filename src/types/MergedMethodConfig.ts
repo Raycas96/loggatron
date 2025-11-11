@@ -3,6 +3,7 @@ export interface MergedMethodConfig {
     preLog?: string;
     postLog?: string;
     color?: string;
+    skipOnEmptyLog?: boolean;
   };
   showFileName: boolean;
   showFunctionName: boolean;

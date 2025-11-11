@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/Raycas96/loggatron/compare/v1.2.0-beta.2...v1.2.0) (2025-11-11)
+
+### Features
+
+- add separator color, skipOnEmptyLog, addNewLine, and rename showComponentName ([840534b](https://github.com/Raycas96/loggatron/commit/840534b66a913f203826efa0c6b2fcf71ec1f011))
+
 ## [1.2.0-beta.2](https://github.com/Raycas96/loggatron/compare/v1.2.0-beta.1...v1.2.0-beta.2) (2025-11-09)
 
 ## [1.2.0-beta.1](https://github.com/Raycas96/loggatron/compare/v1.2.0-beta.0...v1.2.0-beta.1) (2025-11-09)

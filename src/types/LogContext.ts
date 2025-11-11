@@ -1,6 +1,6 @@
 export interface LogContext {
   fileName?: string;
-  componentName?: string;
+  functionName?: string;
   lineNumber?: number;
   columnNumber?: number;
 }

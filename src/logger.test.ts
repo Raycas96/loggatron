@@ -208,7 +208,7 @@ describe('Loggatron', () => {
       expect(callStrings).not.toMatch(/\(.*:\d+\)/);
     });
 
-    it('should apply method-specific showComponentName override', () => {
+    it('should apply method-specific showFunctionName override', () => {
       logger = new Loggatron({
         showFunctionName: true,
         overrides: {

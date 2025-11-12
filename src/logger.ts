@@ -276,7 +276,7 @@ export class Loggatron {
       // remove protocol, domain port and query string
       const cleanedFunctionName = functionName
         .replace(/^https?:\/\//, '')
-        .replace(/:\d+/, '')
+        .replace(/^([^\/]+)(:\d+)?\//, '$1/')
         .split('?')[0];
 
       if (cleanedFunctionName.length > 0) {

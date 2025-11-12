@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/Raycas96/loggatron/compare/v1.2.0...v1.2.1) (2025-11-12)
+
+### Bug Fixes
+
+- **logger:** add URL handling for function name extraction ([5f78a94](https://github.com/Raycas96/loggatron/commit/5f78a94e584192a66df2b929ea8d9d2c1fd2641d))
+- remove useless escape char ([bdf6d74](https://github.com/Raycas96/loggatron/commit/bdf6d744224b2382ce27c662187b9b31c80d5a12))
+
 ## [1.2.0](https://github.com/Raycas96/loggatron/compare/v1.2.0-beta.2...v1.2.0) (2025-11-11)
 
 ### Features

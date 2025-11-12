@@ -272,7 +272,7 @@ export class Loggatron {
   }
 
   private extractFunctionName(functionName: string, filePath: string): string {
-    if (functionName.includes('http') || functionName.includes('https')) {
+    if (functionName.startsWith('http://') || functionName.startsWith('https://')) {
       // remove protocol, domain port and query string
       const cleanedFunctionName = functionName
         .replace(/^https?:\/\//, '')

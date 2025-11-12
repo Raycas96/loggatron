@@ -30,6 +30,7 @@
     "dev:link": "npm run build && npm link",
     "dev:pack": "npm run build && npm pack",
     "release:latest": "standard-version",
+    "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:beta": "standard-version --prerelease beta",

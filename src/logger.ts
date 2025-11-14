@@ -346,10 +346,9 @@ export class Loggatron {
           filePathLower.includes('loggatron/dist') ||
           filePathLower.includes('loggatron/src') ||
           filePathLower.endsWith('logger.ts') ||
-          (
-            (filePathLower.endsWith('index.ts') || filePathLower.endsWith('index.js')) &&
-            (filePathLower.includes('loggatron/dist') || filePathLower.includes('loggatron/src'))
-          ) ||
+          ((filePathLower.endsWith('index.ts') || filePathLower.endsWith('index.js')) &&
+            (filePathLower.includes('loggatron/dist') ||
+              filePathLower.includes('loggatron/src'))) ||
           nameLower.includes('loggatron')
         ) {
           if (this.config.debug) {
@@ -424,12 +423,9 @@ export class Loggatron {
         .split('?')[0];
 
       if (cleanedFunctionName.length > 0) {
-        let result: string;
-        if (cleanedFunctionName.includes('/')) {
-          result = cleanedFunctionName.split('/').at(-1) || '';
-        } else {
-          result = cleanedFunctionName;
-        }
+        const result = cleanedFunctionName.includes('/')
+          ? cleanedFunctionName.split('/').at(-1) || ''
+          : cleanedFunctionName;
 
         if (this.config.debug) {
           this.originalConsole.log(

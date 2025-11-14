@@ -339,14 +339,18 @@ export class Loggatron {
         }
 
         // Skip internal files and node_modules
+        const filePathLower = filePath.toLowerCase();
+        const nameLower = name.toLowerCase();
         if (
-          filePath.includes('node_modules') ||
-          filePath.includes('loggatron') ||
-          filePath.includes('Logger.ts') ||
-          filePath.includes('logger.ts') ||
-          filePath.includes('index.ts') ||
-          name.includes('loggatron') ||
-          name.includes('Loggatron')
+          filePathLower.includes('node_modules') ||
+          filePathLower.includes('loggatron/dist') ||
+          filePathLower.includes('loggatron/src') ||
+          filePathLower.endsWith('logger.ts') ||
+          (
+            (filePathLower.endsWith('index.ts') || filePathLower.endsWith('index.js')) &&
+            (filePathLower.includes('loggatron/dist') || filePathLower.includes('loggatron/src'))
+          ) ||
+          nameLower.includes('loggatron')
         ) {
           if (this.config.debug) {
             this.originalConsole.log(`[Loggatron Debug] Skipping internal file: "${filePath}"`);

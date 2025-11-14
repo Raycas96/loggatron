@@ -41,6 +41,7 @@ export interface LoggatronConfig {
   methods?: LogMethod[];
   captureStack?: boolean;
   maxStackDepth?: number;
+  debug?: boolean; // Enable debug logging for stack trace parsing
   // Method-specific overrides
   overrides?: {
     log?: MethodOverrideConfig;

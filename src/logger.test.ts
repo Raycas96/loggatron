@@ -95,9 +95,9 @@ describe('Loggatron', () => {
       console.info('info test');
       console.error('error test');
 
-      // log and error should be intercepted
+      // log and error should be intercepted (separator + combined context+message + separator)
       expect(consoleLogSpy.mock.calls.length).toBeGreaterThan(1);
-      expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(1);
+      expect(consoleErrorSpy.mock.calls.length).toBeGreaterThanOrEqual(1);
       // info should be direct call (not intercepted)
       expect(consoleInfoSpy).toHaveBeenCalledWith('info test');
     });
@@ -503,11 +503,12 @@ describe('Loggatron', () => {
       // Should handle multiple args
       expect(consoleLogSpy).toHaveBeenCalled();
       // Find the call that contains the actual arguments
-      // The logger makes multiple calls: separator, context, actual args, separator, spacing
+      // The logger now prepends context to first string arg: separator, [context + arg1, arg2, obj], separator, spacing
       const callWithArgs = consoleLogSpy.mock.calls.find(
         (call: unknown[]) =>
-          call.length === 3 &&
-          call[0] === 'arg1' &&
+          call.length >= 3 &&
+          typeof call[0] === 'string' &&
+          call[0].includes('arg1') && // Context is prepended to first string arg
           call[1] === 'arg2' &&
           typeof call[2] === 'object' &&
           call[2] !== null &&
@@ -515,7 +516,10 @@ describe('Loggatron', () => {
           (call[2] as { key: string }).key === 'value'
       );
       expect(callWithArgs).toBeDefined();
-      expect(callWithArgs).toEqual(['arg1', 'arg2', { key: 'value' }]);
+      // Should contain context prepended to first arg, then remaining args
+      expect(callWithArgs![0]).toContain('arg1');
+      expect(callWithArgs![1]).toBe('arg2');
+      expect(callWithArgs![2]).toEqual({ key: 'value' });
     });
 
     it('should handle undefined and null values', () => {

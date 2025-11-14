@@ -31,6 +31,7 @@ export const DEFAULT_CONFIG: Required<Omit<LoggatronConfig, 'overrides'>> & {
   methods: ['log', 'info', 'warn', 'error', 'debug'],
   captureStack: true,
   maxStackDepth: 3,
+  debug: false,
   overrides: undefined,
 };
 

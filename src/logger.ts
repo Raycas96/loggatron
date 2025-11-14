@@ -139,6 +139,12 @@ export class Loggatron {
   }
 
   private log(method: LogMethod, args: unknown[], originalMethod: typeof console.log): void {
+    // If disabled, just pass through to original method
+    if (!this.config.enabled) {
+      originalMethod(...args);
+      return;
+    }
+
     const methodConfig = this.getMethodConfig(method);
     const context = this.captureContext();
     const { separator, showFileName, showFunctionName } = methodConfig;
@@ -186,13 +192,41 @@ export class Loggatron {
       this.originalConsole.log(preLogParts.join(' '));
     }
 
-    // Print context info
-    if (contextParts.length > 0) {
-      originalMethod(contextParts.join(' '));
-    }
+    // Combine context info with actual log content
+    if (contextParts.length > 0 && args.length > 0) {
+      // Prepend context to the first argument so they appear together
+      const contextString = contextParts.join(' ');
+      const firstArg = args[0];
 
-    // Print actual log content
-    originalMethod(...args);
+      if (typeof firstArg === 'string') {
+        // If first arg is a multi-line string (like React error boundaries),
+        // prepend context only to the first line to keep formatting clean
+        if (firstArg.includes('\n')) {
+          const lines = firstArg.split('\n');
+          const firstLineWithContext = `${contextString} ${lines[0]}`;
+          const restOfLines = lines.slice(1).join('\n');
+          originalMethod(`${firstLineWithContext}\n${restOfLines}`, ...args.slice(1));
+        } else {
+          // Single-line string: prepend context normally
+          originalMethod(`${contextString} ${firstArg}`, ...args.slice(1));
+        }
+      } else if (firstArg instanceof Error) {
+        // If first arg is an Error, prepend context to the error message
+        const errorWithContext = new Error(`${contextString} ${firstArg.message}`);
+        errorWithContext.stack = firstArg.stack;
+        errorWithContext.name = firstArg.name;
+        originalMethod(errorWithContext, ...args.slice(1));
+      } else {
+        // For other types, combine as separate arguments
+        originalMethod(contextString, ...args);
+      }
+    } else if (contextParts.length > 0) {
+      // Only context, no content
+      originalMethod(contextParts.join(' '));
+    } else if (args.length > 0) {
+      // Only content, no context
+      originalMethod(...args);
+    }
 
     // Print post-log separator
     if (postLogParts.length > 0) {
@@ -213,49 +247,136 @@ export class Loggatron {
     try {
       const stack = new Error().stack;
       if (!stack) {
+        if (this.config.debug) {
+          this.originalConsole.log('[Loggatron] No stack trace available');
+        }
         return {};
       }
 
       const stackLines = stack.split('\n');
-      // Skip the first 3 lines: Error, captureContext, log
-      const relevantLines = stackLines.slice(4, 4 + (this.config.maxStackDepth || 3));
 
-      for (const line of relevantLines) {
+      if (this.config.debug) {
+        this.originalConsole.log('[Loggatron] Full stack trace:');
+        stackLines.forEach((line, idx) => {
+          this.originalConsole.log(`  [${idx}] ${line}`);
+        });
+      }
+
+      // Skip the first 4 lines: Error, captureContext, log, console.<computed>
+      const skipLines = 4;
+      const maxDepth = this.config.maxStackDepth || 3;
+      // When all initial frames are internal (e.g., React error boundaries),
+      // we need to search deeper. Use a larger search window but still respect maxDepth preference.
+      const searchDepth = Math.max(maxDepth * 2, 10);
+      const relevantLines = stackLines.slice(skipLines, skipLines + searchDepth);
+
+      if (this.config.debug) {
+        this.originalConsole.log(
+          `[Loggatron] Skipping first ${skipLines} lines, examining next ${searchDepth} lines:`
+        );
+        relevantLines.forEach((line, idx) => {
+          this.originalConsole.log(`  [${skipLines + idx}] ${line}`);
+        });
+      }
+
+      for (let i = 0; i < relevantLines.length; i++) {
+        const line = relevantLines[i];
+
+        if (this.config.debug) {
+          this.originalConsole.log(`[Loggatron] Examining line ${skipLines + i}: "${line}"`);
+        }
+
         // Match browser format: at functionName (file:///path/to/file.js:line:column)
         // or Node.js format: at functionName (/path/to/file.js:line:column)
-        const browserMatch = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
-        const nodeMatch = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
-        const simpleMatch = line.match(/at\s+(.+?):(\d+):(\d+)/);
+        const withParenthesesMatch = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
 
-        const match = browserMatch || nodeMatch || simpleMatch;
-        if (match) {
-          const name = match[1] || 'anonymous';
-          const filePath = match[2] || match[1];
-          const lineNumber = parseInt(match[3] || match[2], 10);
-          const columnNumber = parseInt(match[4] || match[3], 10);
+        // Match: at file:line:column (no function name, no parentheses)
+        const simpleMatch = line.match(/at\s+(.+?):(\d+):(\d+)$/);
 
-          // Skip internal files and node_modules
-          if (
-            filePath.includes('node_modules') ||
-            filePath.includes('loggatron') ||
-            filePath.includes('Logger.ts') ||
-            filePath.includes('index.ts')
-          ) {
-            continue;
+        // Also match: functionName @ file:line format (browser format without "at")
+        const atSymbolMatch = line.match(/^(.+?)\s+@\s+(.+?):(\d+)(?::(\d+))?$/);
+
+        let name: string;
+        let filePath: string;
+        let lineNumber: number;
+        let columnNumber: number;
+
+        if (atSymbolMatch) {
+          // Handle functionName @ file:line format
+          name = atSymbolMatch[1].trim();
+          filePath = atSymbolMatch[2].trim();
+          lineNumber = parseInt(atSymbolMatch[3], 10);
+          columnNumber = atSymbolMatch[4] ? parseInt(atSymbolMatch[4], 10) : 0;
+        } else if (withParenthesesMatch) {
+          // Handle: at functionName (file:line:column)
+          name = withParenthesesMatch[1].trim();
+          filePath = withParenthesesMatch[2].trim();
+          lineNumber = parseInt(withParenthesesMatch[3], 10);
+          columnNumber = parseInt(withParenthesesMatch[4], 10);
+        } else if (simpleMatch) {
+          // Handle: at file:line:column (no function name, no parentheses)
+          name = 'anonymous';
+          filePath = simpleMatch[1].trim();
+          lineNumber = parseInt(simpleMatch[2], 10);
+          columnNumber = parseInt(simpleMatch[3], 10);
+        } else {
+          // No match found
+          if (this.config.debug) {
+            this.originalConsole.log(`[Loggatron] No match found for line: "${line}"`);
           }
-
-          const fileName = this.extractFileName(filePath);
-          const functionName = this.extractFunctionName(name, filePath);
-
-          return {
-            fileName,
-            functionName: functionName,
-            lineNumber,
-            columnNumber,
-          };
+          continue;
         }
+
+        if (this.config.debug) {
+          this.originalConsole.log(`[Loggatron] Match found:`);
+          this.originalConsole.log(`  - name: "${name}"`);
+          this.originalConsole.log(`  - filePath: "${filePath}"`);
+          this.originalConsole.log(`  - lineNumber: ${lineNumber}`);
+          this.originalConsole.log(`  - columnNumber: ${columnNumber}`);
+        }
+
+        // Skip internal files and node_modules
+        if (
+          filePath.includes('node_modules') ||
+          filePath.includes('loggatron') ||
+          filePath.includes('Logger.ts') ||
+          filePath.includes('logger.ts') ||
+          filePath.includes('index.ts') ||
+          name.includes('loggatron') ||
+          name.includes('Loggatron')
+        ) {
+          if (this.config.debug) {
+            this.originalConsole.log(`[Loggatron] Skipping internal file: "${filePath}"`);
+          }
+          continue;
+        }
+
+        const fileName = this.extractFileName(filePath);
+        const functionName = this.extractFunctionName(name, filePath);
+
+        if (this.config.debug) {
+          this.originalConsole.log(`[Loggatron] Extracted context:`);
+          this.originalConsole.log(`  - fileName: "${fileName}"`);
+          this.originalConsole.log(`  - functionName: "${functionName}"`);
+          this.originalConsole.log(`  - lineNumber: ${lineNumber}`);
+          this.originalConsole.log(`  - columnNumber: ${columnNumber}`);
+        }
+
+        return {
+          fileName,
+          functionName: functionName,
+          lineNumber,
+          columnNumber,
+        };
+      }
+
+      if (this.config.debug) {
+        this.originalConsole.log('[Loggatron] No valid context found in stack trace');
       }
     } catch (e) {
+      if (this.config.debug) {
+        this.originalConsole.error('[Loggatron] Error capturing context:', e);
+      }
       // Silent fail if stack capture fails
     }
 
@@ -263,15 +384,31 @@ export class Loggatron {
   }
 
   private extractFileName(filePath: string): string {
+    if (this.config.debug) {
+      this.originalConsole.log(`[Loggatron] extractFileName input: "${filePath}"`);
+    }
+
     // Remove query strings and hashes
     const cleanPath = filePath.split('?')[0].split('#')[0];
 
     // Extract just the filename
     const parts = cleanPath.split(/[/\\]/);
-    return parts[parts.length - 1] || cleanPath;
+    const fileName = parts[parts.length - 1] || cleanPath;
+
+    if (this.config.debug) {
+      this.originalConsole.log(`[Loggatron] extractFileName output: "${fileName}"`);
+    }
+
+    return fileName;
   }
 
   private extractFunctionName(functionName: string, filePath: string): string {
+    if (this.config.debug) {
+      this.originalConsole.log(
+        `[Loggatron] extractFunctionName input: functionName="${functionName}", filePath="${filePath}"`
+      );
+    }
+
     if (functionName.startsWith('http://') || functionName.startsWith('https://')) {
       // remove protocol, domain, port and query string
       const cleanedFunctionName = functionName
@@ -280,11 +417,17 @@ export class Loggatron {
         .split('?')[0];
 
       if (cleanedFunctionName.length > 0) {
+        let result: string;
         if (cleanedFunctionName.includes('/')) {
-          return cleanedFunctionName.split('/').at(-1) || '';
+          result = cleanedFunctionName.split('/').at(-1) || '';
+        } else {
+          result = cleanedFunctionName;
         }
 
-        return cleanedFunctionName;
+        if (this.config.debug) {
+          this.originalConsole.log(`[Loggatron] extractFunctionName (URL) output: "${result}"`);
+        }
+        return result;
       }
     }
 
@@ -297,6 +440,11 @@ export class Loggatron {
       // Should contain at least one letter.
       functionName.match(/[a-zA-Z]/)
     ) {
+      if (this.config.debug) {
+        this.originalConsole.log(
+          `[Loggatron] extractFunctionName (meaningful) output: "${functionName}"`
+        );
+      }
       return functionName;
     }
 
@@ -305,10 +453,15 @@ export class Loggatron {
     const nameWithoutExt = fileName.split('.')[0];
 
     // Capitalize first letter if it's lowercase (common component pattern)
+    let result = 'Unknown';
     if (nameWithoutExt && nameWithoutExt.length > 0) {
-      return nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
+      result = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
     }
 
-    return 'Unknown';
+    if (this.config.debug) {
+      this.originalConsole.log(`[Loggatron] extractFunctionName (from file) output: "${result}"`);
+    }
+
+    return result;
   }
 }

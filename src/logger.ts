@@ -248,7 +248,7 @@ export class Loggatron {
       const stack = new Error().stack;
       if (!stack) {
         if (this.config.debug) {
-          this.originalConsole.log('[Loggatron] No stack trace available');
+          this.originalConsole.log('[Loggatron Debug] No stack trace available');
         }
         return {};
       }
@@ -256,7 +256,7 @@ export class Loggatron {
       const stackLines = stack.split('\n');
 
       if (this.config.debug) {
-        this.originalConsole.log('[Loggatron] Full stack trace:');
+        this.originalConsole.log('[Loggatron Debug] Full stack trace:');
         stackLines.forEach((line, idx) => {
           this.originalConsole.log(`  [${idx}] ${line}`);
         });
@@ -272,7 +272,7 @@ export class Loggatron {
 
       if (this.config.debug) {
         this.originalConsole.log(
-          `[Loggatron] Skipping first ${skipLines} lines, examining next ${searchDepth} lines:`
+          `[Loggatron Debug] Skipping first ${skipLines} lines, examining next ${searchDepth} lines:`
         );
         relevantLines.forEach((line, idx) => {
           this.originalConsole.log(`  [${skipLines + idx}] ${line}`);
@@ -283,7 +283,7 @@ export class Loggatron {
         const line = relevantLines[i];
 
         if (this.config.debug) {
-          this.originalConsole.log(`[Loggatron] Examining line ${skipLines + i}: "${line}"`);
+          this.originalConsole.log(`[Loggatron Debug] Examining line ${skipLines + i}: "${line}"`);
         }
 
         // Match browser format: at functionName (file:///path/to/file.js:line:column)
@@ -322,13 +322,13 @@ export class Loggatron {
         } else {
           // No match found
           if (this.config.debug) {
-            this.originalConsole.log(`[Loggatron] No match found for line: "${line}"`);
+            this.originalConsole.log(`[Loggatron Debug] No match found for line: "${line}"`);
           }
           continue;
         }
 
         if (this.config.debug) {
-          this.originalConsole.log(`[Loggatron] Match found:`);
+          this.originalConsole.log(`[Loggatron Debug] Match found:`);
           this.originalConsole.log(`  - name: "${name}"`);
           this.originalConsole.log(`  - filePath: "${filePath}"`);
           this.originalConsole.log(`  - lineNumber: ${lineNumber}`);
@@ -346,7 +346,7 @@ export class Loggatron {
           name.includes('Loggatron')
         ) {
           if (this.config.debug) {
-            this.originalConsole.log(`[Loggatron] Skipping internal file: "${filePath}"`);
+            this.originalConsole.log(`[Loggatron Debug] Skipping internal file: "${filePath}"`);
           }
           continue;
         }
@@ -355,7 +355,7 @@ export class Loggatron {
         const functionName = this.extractFunctionName(name, filePath);
 
         if (this.config.debug) {
-          this.originalConsole.log(`[Loggatron] Extracted context:`);
+          this.originalConsole.log(`[Loggatron Debug] Extracted context:`);
           this.originalConsole.log(`  - fileName: "${fileName}"`);
           this.originalConsole.log(`  - functionName: "${functionName}"`);
           this.originalConsole.log(`  - lineNumber: ${lineNumber}`);
@@ -371,11 +371,11 @@ export class Loggatron {
       }
 
       if (this.config.debug) {
-        this.originalConsole.log('[Loggatron] No valid context found in stack trace');
+        this.originalConsole.log('[Loggatron Debug] No valid context found in stack trace');
       }
     } catch (e) {
       if (this.config.debug) {
-        this.originalConsole.error('[Loggatron] Error capturing context:', e);
+        this.originalConsole.error('[Loggatron Debug] Error capturing context:', e);
       }
       // Silent fail if stack capture fails
     }
@@ -385,7 +385,7 @@ export class Loggatron {
 
   private extractFileName(filePath: string): string {
     if (this.config.debug) {
-      this.originalConsole.log(`[Loggatron] extractFileName input: "${filePath}"`);
+      this.originalConsole.log(`[Loggatron Debug] extractFileName input: "${filePath}"`);
     }
 
     // Remove query strings and hashes
@@ -396,7 +396,7 @@ export class Loggatron {
     const fileName = parts[parts.length - 1] || cleanPath;
 
     if (this.config.debug) {
-      this.originalConsole.log(`[Loggatron] extractFileName output: "${fileName}"`);
+      this.originalConsole.log(`[Loggatron Debug] extractFileName output: "${fileName}"`);
     }
 
     return fileName;
@@ -405,7 +405,7 @@ export class Loggatron {
   private extractFunctionName(functionName: string, filePath: string): string {
     if (this.config.debug) {
       this.originalConsole.log(
-        `[Loggatron] extractFunctionName input: functionName="${functionName}", filePath="${filePath}"`
+        `[Loggatron Debug] extractFunctionName input: functionName="${functionName}", filePath="${filePath}"`
       );
     }
 
@@ -425,7 +425,9 @@ export class Loggatron {
         }
 
         if (this.config.debug) {
-          this.originalConsole.log(`[Loggatron] extractFunctionName (URL) output: "${result}"`);
+          this.originalConsole.log(
+            `[Loggatron Debug] extractFunctionName (URL) output: "${result}"`
+          );
         }
         return result;
       }
@@ -442,7 +444,7 @@ export class Loggatron {
     ) {
       if (this.config.debug) {
         this.originalConsole.log(
-          `[Loggatron] extractFunctionName (meaningful) output: "${functionName}"`
+          `[Loggatron Debug] extractFunctionName (meaningful) output: "${functionName}"`
         );
       }
       return functionName;
@@ -459,7 +461,9 @@ export class Loggatron {
     }
 
     if (this.config.debug) {
-      this.originalConsole.log(`[Loggatron] extractFunctionName (from file) output: "${result}"`);
+      this.originalConsole.log(
+        `[Loggatron Debug] extractFunctionName (from file) output: "${result}"`
+      );
     }
 
     return result;

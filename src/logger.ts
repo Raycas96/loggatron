@@ -213,8 +213,11 @@ export class Loggatron {
       } else if (firstArg instanceof Error) {
         // If first arg is an Error, prepend context to the error message
         const errorWithContext = new Error(`${contextString} ${firstArg.message}`);
-        errorWithContext.stack = firstArg.stack;
-        errorWithContext.name = firstArg.name;
+        Object.assign(errorWithContext, firstArg, {
+          message: `${contextString} ${firstArg.message}`,
+          stack: firstArg.stack,
+          name: firstArg.name,
+        });
         originalMethod(errorWithContext, ...args.slice(1));
       } else {
         // For other types, combine as separate arguments

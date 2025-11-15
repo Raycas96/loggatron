@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG } from './constants';
 import { mergeConfig } from './utils/config';
 import { parseStackTrace } from './utils/stack-trace';
 import { formatLog } from './formatters/log-formatter';
+import { ConsoleLike } from './types/ConsoleLike';
 
 let isInitialized = false;
 
@@ -11,13 +12,7 @@ export class Loggatron {
     overrides?: LoggatronConfig['overrides'];
   };
 
-  private originalConsole: {
-    log: typeof console.log;
-    info: typeof console.info;
-    warn: typeof console.warn;
-    error: typeof console.error;
-    debug: typeof console.debug;
-  };
+  private originalConsole: ConsoleLike;
 
   constructor(config: LoggatronConfig = {}) {
     this.config = {

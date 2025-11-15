@@ -1,4 +1,5 @@
 import { extractFileName } from './file-name';
+import { ConsoleLike } from '../types/ConsoleLike';
 
 /**
  * Extracts a meaningful function/component name from a function name and file path
@@ -12,7 +13,7 @@ export function extractFunctionName(
   functionName: string,
   filePath: string,
   debug = false,
-  originalConsole?: typeof console
+  originalConsole?: ConsoleLike
 ): string {
   if (debug && originalConsole) {
     originalConsole.log(

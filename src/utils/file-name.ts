@@ -1,3 +1,5 @@
+import { ConsoleLike } from '../types/ConsoleLike';
+
 /**
  * Extracts just the filename from a full file path
  * Removes query strings, hashes, and directory paths
@@ -9,7 +11,7 @@
 export function extractFileName(
   filePath: string,
   debug = false,
-  originalConsole?: typeof console
+  originalConsole?: ConsoleLike
 ): string {
   if (debug && originalConsole) {
     originalConsole.log(`[Loggatron Debug] extractFileName input: "${filePath}"`);

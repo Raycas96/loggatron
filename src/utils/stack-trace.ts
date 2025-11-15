@@ -4,6 +4,7 @@ import { MIN_STACK_SEARCH_DEPTH, STACK_SKIP_LINES } from '../constants/stack-tra
 import { isInternalFile } from './internal-files';
 import { extractFileName } from './file-name';
 import { extractFunctionName } from './function-name';
+import { ConsoleLike } from '../types/ConsoleLike';
 
 interface StackTraceConfig {
   captureStack?: boolean;
@@ -19,7 +20,7 @@ interface StackTraceConfig {
  */
 export function parseStackTrace(
   config: StackTraceConfig,
-  originalConsole: typeof console
+  originalConsole: ConsoleLike
 ): LogContext {
   if (!config.captureStack) {
     return {};

@@ -12,7 +12,7 @@ export const STACK_TRACE_PATTERNS = {
    * Matches format: at file:line:column (no function name, no parentheses)
    * Example: "at file:///path/to/file.js:42:15"
    */
-  simple: /at\s+(.+?):(\d+):(\d+)$/,
+  simple: /at\s+(.+?):(\d+):(\d+)(?:\s.*)?$/,
 
   /**
    * Matches browser format: functionName @ file:line (without "at")

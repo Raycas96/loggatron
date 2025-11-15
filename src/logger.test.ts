@@ -95,9 +95,9 @@ describe('Loggatron', () => {
       console.info('info test');
       console.error('error test');
 
-      // log and error should be intercepted
+      // log and error should be intercepted (separator + combined context+message + separator)
       expect(consoleLogSpy.mock.calls.length).toBeGreaterThan(1);
-      expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(1);
+      expect(consoleErrorSpy.mock.calls.length).toBeGreaterThanOrEqual(1);
       // info should be direct call (not intercepted)
       expect(consoleInfoSpy).toHaveBeenCalledWith('info test');
     });
@@ -503,11 +503,12 @@ describe('Loggatron', () => {
       // Should handle multiple args
       expect(consoleLogSpy).toHaveBeenCalled();
       // Find the call that contains the actual arguments
-      // The logger makes multiple calls: separator, context, actual args, separator, spacing
+      // The logger now prepends context to first string arg: separator, [context + arg1, arg2, obj], separator, spacing
       const callWithArgs = consoleLogSpy.mock.calls.find(
         (call: unknown[]) =>
-          call.length === 3 &&
-          call[0] === 'arg1' &&
+          call.length >= 3 &&
+          typeof call[0] === 'string' &&
+          call[0].includes('arg1') && // Context is prepended to first string arg
           call[1] === 'arg2' &&
           typeof call[2] === 'object' &&
           call[2] !== null &&
@@ -515,7 +516,10 @@ describe('Loggatron', () => {
           (call[2] as { key: string }).key === 'value'
       );
       expect(callWithArgs).toBeDefined();
-      expect(callWithArgs).toEqual(['arg1', 'arg2', { key: 'value' }]);
+      // Should contain context prepended to first arg, then remaining args
+      expect(callWithArgs![0]).toContain('arg1');
+      expect(callWithArgs![1]).toBe('arg2');
+      expect(callWithArgs![2]).toEqual({ key: 'value' });
     });
 
     it('should handle undefined and null values', () => {
@@ -539,6 +543,88 @@ describe('Loggatron', () => {
         console.log(obj);
         console.log(arr);
       }).not.toThrow();
+    });
+
+    it('should handle multi-line strings by prepending context only to first line', () => {
+      logger = new Loggatron({
+        captureStack: true,
+      });
+      logger.init();
+
+      const multiLineMessage =
+        'Error occurred\n    at Component (Component.tsx:42)\n    at App (App.tsx:10)';
+      console.error(multiLineMessage);
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      // Find the call with the multi-line message
+      const callWithMultiLine = consoleErrorSpy.mock.calls.find(
+        (call: unknown[]) =>
+          call.length >= 1 &&
+          typeof call[0] === 'string' &&
+          call[0].includes('Error occurred') &&
+          call[0].includes('at Component')
+      );
+      expect(callWithMultiLine).toBeDefined();
+      // Context should be prepended only to the first line
+      const message = callWithMultiLine![0] as string;
+      const lines = message.split('\n');
+      expect(lines[0]).toContain('❌'); // First line should have context
+      expect(lines[0]).toContain('Error occurred');
+      expect(lines[1]).toBe('    at Component (Component.tsx:42)'); // Subsequent lines unchanged
+      expect(lines[2]).toBe('    at App (App.tsx:10)');
+    });
+
+    it('should handle Error objects by prepending context to error message', () => {
+      logger = new Loggatron({
+        captureStack: true,
+      });
+      logger.init();
+
+      const originalError = new Error('Something went wrong');
+      originalError.stack = 'Error: Something went wrong\n    at test (test.ts:10)';
+      originalError.name = 'CustomError';
+
+      console.error(originalError);
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      // Find the call with the Error object
+      const callWithError = consoleErrorSpy.mock.calls.find(
+        (call: unknown[]) => call.length >= 1 && call[0] instanceof Error
+      );
+      expect(callWithError).toBeDefined();
+      const errorWithContext = callWithError![0] as Error;
+      // Context should be prepended to error message
+      expect(errorWithContext.message).toContain('❌');
+      expect(errorWithContext.message).toContain('Something went wrong');
+      // Stack trace should be preserved
+      expect(errorWithContext.stack).toBe(originalError.stack);
+      // Error name should be preserved
+      expect(errorWithContext.name).toBe('CustomError');
+    });
+
+    it('should preserve Error object properties when prepending context', () => {
+      logger = new Loggatron({
+        captureStack: true,
+      });
+      logger.init();
+
+      const originalError = new Error('Test error');
+      originalError.stack = 'Error: Test error\n    at test (test.ts:5)';
+      originalError.name = 'TestError';
+
+      console.error(originalError, 'Additional context');
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      const callWithError = consoleErrorSpy.mock.calls.find(
+        (call: unknown[]) => call[0] instanceof Error
+      );
+      expect(callWithError).toBeDefined();
+      const errorWithContext = callWithError![0] as Error;
+      // Verify stack and name are preserved
+      expect(errorWithContext.stack).toBe(originalError.stack);
+      expect(errorWithContext.name).toBe('TestError');
+      // Additional arguments should be passed through
+      expect(callWithError![1]).toBe('Additional context');
     });
   });
 });

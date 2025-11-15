@@ -1,0 +1,66 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Determine npm tag from version
+        id: npm-tag
+        run: |
+          if [[ "${{ github.event.release.prerelease }}" == "true" ]] || [[ "${{ github.ref }}" == refs/tags/*-* ]]; then
+            # Check version for beta, alpha, or rc
+            if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+              TAG=${GITHUB_REF#refs/tags/}
+            else
+              TAG="${{ github.event.release.tag_name }}"
+            fi
+            
+            if [[ "$TAG" == *-beta* ]]; then
+              echo "tag=beta" >> $GITHUB_OUTPUT
+            elif [[ "$TAG" == *-alpha* ]]; then
+              echo "tag=alpha" >> $GITHUB_OUTPUT
+            elif [[ "$TAG" == *-rc* ]]; then
+              echo "tag=rc" >> $GITHUB_OUTPUT
+            else
+              echo "tag=beta" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to npm
+        run: npm publish --tag ${{ steps.npm-tag.outputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+

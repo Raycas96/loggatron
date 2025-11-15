@@ -42,8 +42,8 @@ init();
 // Now all console.log calls will be enhanced
 console.log('Hello World');
 // Output:
-// -------------------------------- 📝 [MyComponent] (index.ts:42)
-// Hello World
+// --------------------------------
+// 📝 [MyComponent] (index.ts:42) Hello World
 // --------------------------------
 ```
 
@@ -250,6 +250,30 @@ init({
 });
 ```
 
+### Debug Stack Trace Parsing
+
+Enable debug logging to troubleshoot context extraction issues:
+
+```typescript
+import { init } from 'loggatron';
+
+init({
+  debug: true, // Enable debug logging
+});
+
+console.log('Test');
+// Will output detailed information about stack trace parsing:
+// [Loggatron Debug] Full stack trace:
+//   [0] Error
+//   [1]     at Loggatron.captureContext (...)
+//   ...
+// [Loggatron Debug] Examining line 4: "..."
+// [Loggatron Debug] Match found:
+//   - name: "functionName"
+//   - filePath: "path/to/file.ts"
+//   ...
+```
+
 ### Update Configuration Dynamically
 
 ```typescript
@@ -290,29 +314,30 @@ if (instance) {
 
 ### Global Configuration
 
-| Option                     | Type          | Default                                 | Description                                   |
-| -------------------------- | ------------- | --------------------------------------- | --------------------------------------------- |
-| `enabled`                  | `boolean`     | `true`                                  | Enable/disable the logger                     |
-| `separator.preLog`         | `string`      | `"--------------------------------"`    | Text before each log                          |
-| `separator.postLog`        | `string`      | `"--------------------------------"`    | Text after each log                           |
-| `separator.color`          | `string`      | `'\x1b[97m'`                            | ANSI color code for separators (Bright White) |
-| `separator.skipOnEmptyLog` | `boolean`     | `true`                                  | Skip separators when log is empty             |
-| `showFileName`             | `boolean`     | `true`                                  | Show file name and line number                |
-| `showFunctionName`         | `boolean`     | `true`                                  | Show function/component name                  |
-| `addNewLine`               | `boolean`     | `false`                                 | Add extra newline after each log              |
-| `colors.log`               | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)                |
-| `colors.info`              | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)              |
-| `colors.warn`              | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)             |
-| `colors.error`             | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)               |
-| `colors.debug`             | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta)           |
-| `emojis.log`               | `string`      | `'📝'`                                  | Emoji for log                                 |
-| `emojis.info`              | `string`      | `'ℹ️'`                                  | Emoji for info                                |
-| `emojis.warn`              | `string`      | `'⚠️'`                                  | Emoji for warn                                |
-| `emojis.error`             | `string`      | `'❌'`                                  | Emoji for error                               |
-| `emojis.debug`             | `string`      | `'🐛'`                                  | Emoji for debug                               |
-| `methods`                  | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept                  |
-| `captureStack`             | `boolean`     | `true`                                  | Capture stack trace for context               |
-| `maxStackDepth`            | `number`      | `3`                                     | Maximum stack frames to check                 |
+| Option                     | Type          | Default                                 | Description                                                                                                   |
+| -------------------------- | ------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `enabled`                  | `boolean`     | `true`                                  | Enable/disable the logger                                                                                     |
+| `separator.preLog`         | `string`      | `"--------------------------------"`    | Text before each log                                                                                          |
+| `separator.postLog`        | `string`      | `"--------------------------------"`    | Text after each log                                                                                           |
+| `separator.color`          | `string`      | `'\x1b[97m'`                            | ANSI color code for separators (Bright White)                                                                 |
+| `separator.skipOnEmptyLog` | `boolean`     | `true`                                  | Skip separators when log is empty                                                                             |
+| `showFileName`             | `boolean`     | `true`                                  | Show file name and line number                                                                                |
+| `showFunctionName`         | `boolean`     | `true`                                  | Show function/component name                                                                                  |
+| `addNewLine`               | `boolean`     | `false`                                 | Add extra newline after each log                                                                              |
+| `colors.log`               | `string`      | `'\x1b[36m'`                            | ANSI color code for log (Cyan)                                                                                |
+| `colors.info`              | `string`      | `'\x1b[32m'`                            | ANSI color code for info (Green)                                                                              |
+| `colors.warn`              | `string`      | `'\x1b[33m'`                            | ANSI color code for warn (Yellow)                                                                             |
+| `colors.error`             | `string`      | `'\x1b[31m'`                            | ANSI color code for error (Red)                                                                               |
+| `colors.debug`             | `string`      | `'\x1b[35m'`                            | ANSI color code for debug (Magenta)                                                                           |
+| `emojis.log`               | `string`      | `'📝'`                                  | Emoji for log                                                                                                 |
+| `emojis.info`              | `string`      | `'ℹ️'`                                  | Emoji for info                                                                                                |
+| `emojis.warn`              | `string`      | `'⚠️'`                                  | Emoji for warn                                                                                                |
+| `emojis.error`             | `string`      | `'❌'`                                  | Emoji for error                                                                                               |
+| `emojis.debug`             | `string`      | `'🐛'`                                  | Emoji for debug                                                                                               |
+| `methods`                  | `LogMethod[]` | `['log','info','warn','error','debug']` | Console methods to intercept                                                                                  |
+| `captureStack`             | `boolean`     | `true`                                  | Capture stack trace for context                                                                               |
+| `maxStackDepth`            | `number`      | `3`                                     | Preferred stack frames to check (automatically searches deeper when needed, e.g., for React error boundaries) |
+| `debug`                    | `boolean`     | `false`                                 | Enable debug logging for stack trace parsing (useful for troubleshooting context extraction)                  |
 
 ### Method-Specific Overrides (`overrides`)
 
@@ -476,6 +501,28 @@ You can customize colors using ANSI escape codes:
 - `'\x1b[96m'` - Bright Cyan
 - `'\x1b[97m'` - Bright White
 - `'\x1b[0m'` - Reset (automatically added)
+
+## Error Handling
+
+Loggatron intelligently handles various error scenarios:
+
+- **Inline Context**: Error messages and context (emoji + location) appear together on the same line for better readability
+- **Multi-line Errors**: React error boundaries and other multi-line error messages are handled gracefully, with context prepended only to the first line
+- **Deep Stack Search**: When errors originate from library code (e.g., React internals), Loggatron automatically searches deeper in the stack trace to find your application code and display proper context
+
+```typescript
+// React error boundary errors will show proper context even when called from React internals
+console.error('Error occurred');
+// Output: ❌ [YourComponent] (YourComponent.tsx:42) Error occurred
+
+// Multi-line errors (like React component stack traces) are handled cleanly
+console.error(
+  'The above error occurred in the <Component> component:\n    at Component (...)\n    ...'
+);
+// Output: ❌ The above error occurred in the <Component> component:
+//            at Component (...)
+//            ...
+```
 
 ## Browser Support
 

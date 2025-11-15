@@ -11,11 +11,6 @@ interface StackTraceConfig {
   debug?: boolean;
 }
 
-interface ConsoleLike {
-  log: (...args: unknown[]) => void;
-  error: (...args: unknown[]) => void;
-}
-
 /**
  * Parses the current stack trace to extract context information
  * @param config Configuration object with captureStack, maxStackDepth, and debug flags
@@ -24,7 +19,7 @@ interface ConsoleLike {
  */
 export function parseStackTrace(
   config: StackTraceConfig,
-  originalConsole: ConsoleLike
+  originalConsole: typeof console
 ): LogContext {
   if (!config.captureStack) {
     return {};

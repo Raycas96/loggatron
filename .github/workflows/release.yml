@@ -22,6 +22,11 @@ jobs:
     concurrency:
       group: release-${{ github.ref }}
       cancel-in-progress: false
+    # Disable Husky in CI so the changesets/action's "Version Packages" commit
+    # is not blocked by the local commit-msg / pre-commit hooks. CI already
+    # runs typecheck/lint/test/build explicitly, so the hooks add no value here.
+    env:
+      HUSKY: "0"
 
     steps:
       - name: Checkout

@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run all checks but skip the version/publish step"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.15.0"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      # Two ways to skip a publish even on push to main:
+      #   1. Include "[skip release]" in the commit message (push events).
+      #   2. Trigger workflow_dispatch with dry_run=true (manual runs).
+      # In both cases lint/test/build still run as a sanity check.
+      - name: Decide whether to run release step
+        id: gate
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "reason=workflow_dispatch dry_run=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ contains(github.event.head_commit.message, '[skip release]') }}" == "true" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "reason=commit message contains [skip release]" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "reason=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip release step
+        if: steps.gate.outputs.skip == 'true'
+        run: echo "::notice title=Release skipped::${{ steps.gate.outputs.reason }}"
+
+      # Trusted Publishing (OIDC):
+      # npm publish uses GitHub OIDC via id-token: write, no NPM_TOKEN required.
+      - name: Create Release PR or Publish
+        if: steps.gate.outputs.skip != 'true'
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

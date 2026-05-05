@@ -2,47 +2,38 @@
   "name": "loggatron",
   "version": "1.2.2",
   "description": "A tree-shakeable, configurable logger that intercepts console methods with separators, colors, and emojis",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/types/index.d.ts",
+  "license": "MIT",
+  "author": "raycas96",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raycas96/loggatron.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Raycas96/loggatron/issues"
+  },
+  "homepage": "https://github.com/Raycas96/loggatron#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
-  "scripts": {
-    "build": "rollup -c",
-    "prepublishOnly": "npm run build",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.{ts,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,json,md}\"",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "prepare": "husky",
-    "dev:link": "npm run build && npm link",
-    "dev:pack": "npm run build && npm pack",
-    "release:latest": "standard-version",
-    "release:patch": "standard-version --release-as patch",
-    "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major",
-    "release:beta": "standard-version --prerelease beta",
-    "release:beta:minor": "standard-version --prerelease beta --release-as minor",
-    "release:beta:major": "standard-version --prerelease beta --release-as major",
-    "release:alpha": "standard-version --prerelease alpha",
-    "release:rc": "standard-version --prerelease rc",
-    "publish:beta": "npm run release:beta && npm publish --tag beta",
-    "publish:alpha": "npm run release:alpha && npm publish --tag alpha",
-    "publish:rc": "npm run release:rc && npm publish --tag rc",
-    "publish:latest": "npm run release:latest && npm publish --tag latest"
-  },
+  "sideEffects": false,
   "keywords": [
     "logger",
     "console",
@@ -51,22 +42,29 @@
     "debugging",
     "tree-shakeable"
   ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Raycas96/loggatron.git"
+  "engines": {
+    "node": ">=20.10.0"
   },
-  "homepage": "https://github.com/Raycas96/loggatron#readme",
-  "bugs": {
-    "url": "https://github.com/Raycas96/loggatron/issues"
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,json,md}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "release": "changeset publish",
+    "prepare": "husky",
+    "dev:link": "npm run build && npm link",
+    "dev:pack": "npm run build && npm pack"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.0",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.11.5",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
@@ -77,17 +75,17 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
-    "rollup": "^4.9.6",
-    "standard-version": "^9.5.0",
+    "tsdown": "^0.21.10",
     "typescript": "^5.3.3",
-    "tslib": "^2.8.1",
     "vitest": "^1.2.0"
   },
-  "sideEffects": false,
   "lint-staged": {
-    "*.{ts,json,md}": [
+    "*.ts": [
       "prettier --write",
       "eslint --fix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
     ]
   },
   "commitlint": {

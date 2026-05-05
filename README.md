@@ -1,19 +1,45 @@
 # Loggatron
 
+[![npm version](https://img.shields.io/npm/v/loggatron.svg?style=flat-square)](https://www.npmjs.com/package/loggatron)
+[![CI](https://github.com/Raycas96/loggatron/actions/workflows/ci.yml/badge.svg)](https://github.com/Raycas96/loggatron/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/npm/l/loggatron.svg?style=flat-square)](./LICENSE)
+[![Types: TypeScript](https://img.shields.io/badge/types-TypeScript-blue?style=flat-square)](#api-reference)
+[![Tree-shakeable](https://img.shields.io/badge/tree--shakeable-yes-brightgreen?style=flat-square)](#tree-shaking)
+
 A tree-shakeable, configurable logger that intercepts console methods with beautiful separators, colors, emojis, and context information. Configure once and enhance all your console logs with automatic file/component detection and method-specific customization.
+
+## Table of Contents
+
+- [Why Loggatron?](#why-loggatron)
+- [Features](#features)
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+- [Method-Specific Overrides](#method-specific-overrides)
+- [Advanced Usage](#advanced-usage)
+- [Configuration Options](#configuration-options)
+- [Removing Console.log in Production Builds](#removing-consolelog-in-production-builds)
+- [Tree-Shaking](#tree-shaking)
+- [ANSI Color Codes Reference](#ansi-color-codes-reference)
+- [Error Handling](#error-handling)
+- [Browser Support](#browser-support)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Contributing & Releasing](#contributing--releasing)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Why Loggatron?
 
-This package was created not because existing logging solutions are inadequate, but because none of them perfectly matched the specific requirements I was looking for. I needed a logger that:
+Loggatron exists because no existing logger combined exactly the features below into one small, zero-dependency package. If your needs overlap, it should be a good fit:
 
-- Intercepts console methods automatically (no need to replace every `console.log`)
-- Provides configurable separators before and after each log
-- Supports method-specific overrides (different formats for `log`, `info`, `error`, etc.)
-- Automatically detects file names, line numbers, and component names
-- Is tree-shakeable and production-ready
-- Works seamlessly with build tools to remove console statements in production
-
-While there are excellent logging packages available, I couldn't find one that combined all these features exactly as I needed them. So I decided to create Loggatron to fill that gap. If you have similar requirements, this package might be perfect for you too!
+- Intercepts console methods automatically — no need to replace every `console.log`
+- Configurable separators before and after each log
+- Method-specific overrides (different formats for `log`, `info`, `error`, etc.)
+- Automatic file name, line number, and function/component name detection
+- Tree-shakeable and production-ready
+- Plays well with build tools that strip `console.*` calls in production
 
 ## Features
 
@@ -29,7 +55,20 @@ While there are excellent logging packages available, I couldn't find one that c
 
 ```bash
 npm install loggatron
+# or
+pnpm add loggatron
+# or
+yarn add loggatron
+# or
+bun add loggatron
 ```
+
+TypeScript types are bundled — no separate `@types/loggatron` package is needed.
+
+## Requirements
+
+- **Node.js** `>=20.10.0` (also runs in modern browsers)
+- ESM and CommonJS are both shipped via the `exports` field, so any modern bundler (Vite, Webpack, Rollup, esbuild, Bun, Rspack, …) and Node.js consume the right format automatically.
 
 ## Quick Start
 
@@ -385,11 +424,10 @@ export default defineConfig({
 });
 ```
 
-Or for more control with Terser:
+Or for more control with Terser (`vite` already bundles `terser`):
 
 ```typescript
 import { defineConfig } from 'vite';
-import { terser } from 'rollup-plugin-terser';
 
 export default defineConfig({
   build: {
@@ -432,7 +470,7 @@ module.exports = {
 ### Rollup
 
 ```javascript
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 export default {
   plugins: [
@@ -635,17 +673,61 @@ init({
 });
 ```
 
+## Contributing & Releasing
+
+### Local development
+
+```bash
+git clone https://github.com/Raycas96/loggatron.git
+cd loggatron
+npm install        # also runs `husky` to install git hooks
+npm run dev        # tsdown in watch mode
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint src
+npm run test       # vitest run
+npm run build      # tsdown -> dist/
+```
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org) — enforced via `commitlint` on `commit-msg`. `lint-staged` runs Prettier + ESLint on staged files in `pre-commit`.
+
+### Releasing (Changesets)
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing — there is no manual `npm publish`. Releases happen automatically from the `main` branch via the [`Release` workflow](./.github/workflows/release.yml).
+
+The flow is:
+
+1. **Add a changeset** alongside any user-facing change:
+
+   ```bash
+   npx changeset
+   ```
+
+   Pick `patch` / `minor` / `major`, write a short summary. Commit the generated `.changeset/*.md` file with the rest of your PR.
+
+2. **Merge your PR** to `main`. The `Release` workflow runs and either:
+   - opens (or updates) a `Version Packages` PR that bumps the version and updates `CHANGELOG.md`, **or**
+   - publishes to npm (if a `Version Packages` PR was just merged).
+
+3. **Merging the `Version Packages` PR** triggers the publish on the next `main` workflow run.
+
+Publishing uses **npm Trusted Publishing (OIDC)** — no `NPM_TOKEN` is stored. The package is published with [npm provenance](https://docs.npmjs.com/generating-provenance-statements) attached.
+
+### Skipping a release
+
+The `Release` workflow also runs lint/test/build on every push to `main` for early failure detection. To gate the actual publish/version step:
+
+| When                                               | How                                                       |
+| -------------------------------------------------- | --------------------------------------------------------- |
+| You want the **whole workflow** skipped            | Include `[skip ci]` in the commit message (GitHub native) |
+| You want CI to run but **no version PR / publish** | Include `[skip release]` in the commit message            |
+| You want a **manual dry-run** of the workflow      | Trigger via `workflow_dispatch` with `dry_run: true`      |
+
+In the latter two cases, install/typecheck/lint/test/build still run as a sanity check; only the `changesets/action` step is skipped.
+
 ## Changelog
 
 All notable changes to this project are documented in [CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 
-MIT
-
-## Related Packages
-
-- `console-log-interceptor` - Basic console interception
-- `console-interceptor` - Proxy-based interception
-- `tslog` - Full-featured TypeScript logger
-- `minilog` - Lightweight logging library
+[MIT](./LICENSE) © Raycas96

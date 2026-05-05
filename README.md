@@ -32,7 +32,7 @@ A tree-shakeable, configurable logger that intercepts console methods with beaut
 
 ## Why Loggatron?
 
-Loggatron exists because no existing logger combined exactly the features below into one small, zero-dependency package. If your needs overlap, it should be a good fit:
+Loggatron exists because no existing logger combined exactly the features below into one small, dependency-light package. If your needs overlap, it should be a good fit:
 
 - Intercepts console methods automatically — no need to replace every `console.log`
 - Configurable separators before and after each log
@@ -49,7 +49,7 @@ Loggatron exists because no existing logger combined exactly the features below 
 - 🔧 **Method Overrides**: Different formatting for each console method (log, info, warn, error, debug)
 - 🌐 **Universal**: Works in Node.js and browser environments
 - 🚀 **Production-ready**: Easy to remove all console.log in production builds
-- 🎯 **Zero Dependencies**: Lightweight with no runtime dependencies
+- 🪶 **Tiny footprint**: ~3.9 kB gzipped + a single ~2 kB runtime dependency ([`stacktrace-parser`](https://www.npmjs.com/package/stacktrace-parser))
 
 ## Installation
 

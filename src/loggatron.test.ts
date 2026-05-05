@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
-import { Loggatron } from './logger';
+import { Loggatron } from './loggatron';
 import { DEFAULT_CONFIG } from './constants';
 
 describe('Loggatron', () => {

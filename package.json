@@ -92,5 +92,8 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "dependencies": {
+    "stacktrace-parser": "^0.1.11"
   }
 }

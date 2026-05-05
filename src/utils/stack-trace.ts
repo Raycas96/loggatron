@@ -1,9 +1,6 @@
+import { parse, type StackFrame } from 'stacktrace-parser';
 import { LogContext } from '../types';
-import { STACK_TRACE_PATTERNS } from '../constants/regex-patterns';
-import { MIN_STACK_SEARCH_DEPTH, STACK_SKIP_LINES } from '../constants/stack-trace';
-import { isInternalFile } from './internal-files';
-import { extractFileName } from './file-name';
-import { extractFunctionName } from './function-name';
+import { isLoggatronInternal, isNodeModules } from './internal-files';
 import { ConsoleLike } from '../types/ConsoleLike';
 
 interface StackTraceConfig {
@@ -12,11 +9,21 @@ interface StackTraceConfig {
   debug?: boolean;
 }
 
+const DEFAULT_MAX_DEPTH = 3;
+const MIN_SEARCH_DEPTH = 10;
+
 /**
- * Parses the current stack trace to extract context information
+ * Parses the current stack trace to extract context information.
+ *
+ * Strategy:
+ *   1. Skip Loggatron's own frames (always — they are noise).
+ *   2. Prefer the first application frame (anything outside `node_modules`).
+ *   3. Fall back to the first `node_modules` frame if no app frame exists.
+ *      This way logs originating fully inside a library still get attribution.
+ *   4. Otherwise return an empty context.
+ *
  * @param config Configuration object with captureStack, maxStackDepth, and debug flags
- * @param originalConsole Console-like object for debug logging (only needs log and error methods)
- * @returns LogContext with fileName, functionName, lineNumber, and columnNumber
+ * @param originalConsole Console-like object for debug logging
  */
 export function parseStackTrace(
   config: StackTraceConfig,
@@ -26,127 +33,116 @@ export function parseStackTrace(
     return {};
   }
 
-  try {
-    const stack = new Error().stack;
-    if (!stack) {
-      if (config.debug) {
-        originalConsole.log('[Loggatron Debug] No stack trace available');
-      }
-      return {};
-    }
-
-    const stackLines = stack.split('\n');
-
+  const stack = new Error().stack;
+  if (!stack) {
     if (config.debug) {
-      originalConsole.log('[Loggatron Debug] Full stack trace:');
-      stackLines.forEach((line, idx) => {
-        originalConsole.log(`  [${idx}] ${line}`);
-      });
+      originalConsole.log('[Loggatron Debug] No stack trace available');
     }
-
-    const skipLines = STACK_SKIP_LINES;
-    const maxDepth = config.maxStackDepth || 3;
-    // When all initial frames are internal (e.g., React error boundaries),
-    // we need to search deeper. Use a larger search window but still respect maxDepth preference.
-    const searchDepth = Math.max(maxDepth * 2, MIN_STACK_SEARCH_DEPTH);
-    const relevantLines = stackLines.slice(skipLines, skipLines + searchDepth);
-
-    if (config.debug) {
-      originalConsole.log(
-        `[Loggatron Debug] Skipping first ${skipLines} lines, examining next ${searchDepth} lines:`
-      );
-      relevantLines.forEach((line, idx) => {
-        originalConsole.log(`  [${skipLines + idx}] ${line}`);
-      });
-    }
-
-    for (let i = 0; i < relevantLines.length; i++) {
-      const line = relevantLines[i];
-
-      if (config.debug) {
-        originalConsole.log(`[Loggatron Debug] Examining line ${skipLines + i}: "${line}"`);
-      }
-
-      // Try to match different stack trace formats
-      const atSymbolMatch = line.match(STACK_TRACE_PATTERNS.atSymbol);
-      const withParenthesesMatch = line.match(STACK_TRACE_PATTERNS.withParentheses);
-      const simpleMatch = line.match(STACK_TRACE_PATTERNS.simple);
-
-      let name: string;
-      let filePath: string;
-      let lineNumber: number;
-      let columnNumber: number;
-
-      if (atSymbolMatch) {
-        // Handle functionName @ file:line format
-        name = atSymbolMatch[1].trim();
-        filePath = atSymbolMatch[2].trim();
-        lineNumber = parseInt(atSymbolMatch[3], 10);
-        columnNumber = atSymbolMatch[4] ? parseInt(atSymbolMatch[4], 10) : 0;
-      } else if (withParenthesesMatch) {
-        // Handle: at functionName (file:line:column)
-        name = withParenthesesMatch[1].trim();
-        filePath = withParenthesesMatch[2].trim();
-        lineNumber = parseInt(withParenthesesMatch[3], 10);
-        columnNumber = parseInt(withParenthesesMatch[4], 10);
-      } else if (simpleMatch) {
-        // Handle: at file:line:column (no function name, no parentheses)
-        name = 'anonymous';
-        filePath = simpleMatch[1].trim();
-        lineNumber = parseInt(simpleMatch[2], 10);
-        columnNumber = parseInt(simpleMatch[3], 10);
-      } else {
-        // No match found
-        if (config.debug) {
-          originalConsole.log(`[Loggatron Debug] No match found for line: "${line}"`);
-        }
-        continue;
-      }
-
-      if (config.debug) {
-        originalConsole.log(`[Loggatron Debug] Match found:`);
-        originalConsole.log(`  - name: "${name}"`);
-        originalConsole.log(`  - filePath: "${filePath}"`);
-        originalConsole.log(`  - lineNumber: ${lineNumber}`);
-        originalConsole.log(`  - columnNumber: ${columnNumber}`);
-      }
-
-      // Skip internal files and node_modules
-      if (isInternalFile(filePath, name)) {
-        if (config.debug) {
-          originalConsole.log(`[Loggatron Debug] Skipping internal file: "${filePath}"`);
-        }
-        continue;
-      }
-
-      const fileName = extractFileName(filePath, config.debug, originalConsole);
-      const functionName = extractFunctionName(name, filePath, config.debug, originalConsole);
-
-      if (config.debug) {
-        originalConsole.log(`[Loggatron Debug] Extracted context:`);
-        originalConsole.log(`  - fileName: "${fileName}"`);
-        originalConsole.log(`  - functionName: "${functionName}"`);
-        originalConsole.log(`  - lineNumber: ${lineNumber}`);
-        originalConsole.log(`  - columnNumber: ${columnNumber}`);
-      }
-
-      return {
-        fileName,
-        functionName: functionName,
-        lineNumber,
-        columnNumber,
-      };
-    }
-
-    if (config.debug) {
-      originalConsole.log('[Loggatron Debug] No valid context found in stack trace');
-    }
-  } catch (e) {
-    if (config.debug) {
-      originalConsole.error('[Loggatron Debug] Error capturing context:', e);
-    }
-    // Silent fail if stack capture fails
+    return {};
   }
 
+  let frames: StackFrame[];
+  try {
+    frames = parse(stack);
+  } catch (e) {
+    if (config.debug) {
+      originalConsole.error('[Loggatron Debug] Error parsing stack trace:', e);
+    }
+    return {};
+  }
+
+  if (config.debug) {
+    originalConsole.log('[Loggatron Debug] Parsed frames:');
+    frames.forEach((f, idx) => {
+      originalConsole.log(
+        `  [${idx}] ${f.methodName} @ ${f.file ?? '<no file>'}:${f.lineNumber ?? 0}:${f.column ?? 0}`
+      );
+    });
+  }
+
+  const maxDepth = config.maxStackDepth || DEFAULT_MAX_DEPTH;
+  const searchDepth = Math.max(maxDepth * 2, MIN_SEARCH_DEPTH);
+  const searchWindow = frames.slice(0, searchDepth);
+
+  let nodeModulesFallback: StackFrame | null = null;
+
+  for (const frame of searchWindow) {
+    const filePath = frame.file ?? '';
+    const methodName = frame.methodName ?? '';
+
+    if (!filePath) {
+      continue;
+    }
+
+    if (isLoggatronInternal(filePath, methodName)) {
+      if (config.debug) {
+        originalConsole.log(`[Loggatron Debug] Skipping Loggatron internal frame: "${filePath}"`);
+      }
+      continue;
+    }
+
+    if (isNodeModules(filePath)) {
+      if (!nodeModulesFallback) {
+        nodeModulesFallback = frame;
+        if (config.debug) {
+          originalConsole.log(
+            `[Loggatron Debug] Remembering node_modules frame as fallback: "${filePath}"`
+          );
+        }
+      }
+      continue;
+    }
+
+    return frameToContext(frame);
+  }
+
+  if (nodeModulesFallback) {
+    if (config.debug) {
+      originalConsole.log('[Loggatron Debug] No app frame found, using node_modules fallback');
+    }
+    return frameToContext(nodeModulesFallback);
+  }
+
+  if (config.debug) {
+    originalConsole.log('[Loggatron Debug] No valid context found in stack trace');
+  }
   return {};
+}
+
+function frameToContext(frame: StackFrame): LogContext {
+  const filePath = frame.file ?? '';
+  return {
+    fileName: extractBasename(filePath),
+    functionName: normalizeFunctionName(frame.methodName ?? '', filePath),
+    lineNumber: frame.lineNumber ?? 0,
+    columnNumber: frame.column ?? 0,
+  };
+}
+
+function extractBasename(filePath: string): string {
+  const cleanPath = filePath.split('?')[0].split('#')[0];
+  const parts = cleanPath.split(/[/\\]/);
+  return parts[parts.length - 1] || cleanPath;
+}
+
+function normalizeFunctionName(rawName: string, filePath: string): string {
+  // stacktrace-parser uses "<unknown>" for anonymous frames
+  const looksMeaningful =
+    rawName &&
+    rawName !== '<unknown>' &&
+    rawName !== 'anonymous' &&
+    /[a-zA-Z]/.test(rawName) &&
+    !rawName.startsWith('Object.') &&
+    !rawName.includes('.');
+
+  if (looksMeaningful) {
+    return rawName;
+  }
+
+  // Fallback: derive a component-like name from the file basename
+  const base = extractBasename(filePath).split('.')[0];
+  if (!base) {
+    return 'Unknown';
+  }
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
